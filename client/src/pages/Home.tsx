@@ -1,4 +1,4 @@
-﻿import { startLogin } from "@/const";
+import { startLogin } from "@/const";
 import { useAuth } from "@/_core/hooks/useAuth";
 import DevicePreview3D from "@/components/DevicePreview3D";
 import {
@@ -27,6 +27,7 @@ import {
   Briefcase
 } from "lucide-react";
 import { useState } from "react";
+import { motion } from "framer-motion";
 import { Link, useLocation } from "wouter";
 
 const roles = [
@@ -69,19 +70,19 @@ export default function Home() {
           <div className="hidden items-center gap-3 md:flex">
             {isAuthenticated && user ? (
               <div className="flex items-center gap-3">
-                <Link
+                <motion.a whileHover={{ rotateX: 2, rotateY: -2, scale: 1.02, z: 20 }} transition={{ type: "spring", stiffness: 300 }} as={Link}
                   href={userWorkspaceLink}
                   className="flex items-center gap-2 rounded-md bg-[#eaf2ee] px-3.5 py-2 text-xs font-semibold text-[#135f52] hover:bg-[#dce9e3]"
                 >
                   <User size={14} />
                   <span>{user.firstName} ({user.role.replace("_", " ")})</span>
-                </Link>
-                <Link
+                </motion.a>
+                <motion.a whileHover={{ rotateX: 2, rotateY: -2, scale: 1.02, z: 20 }} transition={{ type: "spring", stiffness: 300 }} as={Link}
                   href={userWorkspaceLink}
                   className="rounded-md bg-[#135f52] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0d5146]"
                 >
                   Go to Workspace <ArrowRight className="ml-1 inline" size={15} />
-                </Link>
+                </motion.a>
               </div>
             ) : (
               <>
@@ -188,46 +189,46 @@ export default function Home() {
               <div className="my-2 border-t border-[#edf2ef] pt-2">
                 <p className="text-[11px] font-bold uppercase tracking-wider text-[#73837c]">Access Portals</p>
                 <div className="mt-2 space-y-1">
-                  <Link
+                  <motion.a whileHover={{ rotateX: 2, rotateY: -2, scale: 1.02, z: 20 }} transition={{ type: "spring", stiffness: 300 }} as={Link}
                     href="/login/student"
                     onClick={() => setMenuOpen(false)}
                     className="flex items-center gap-2 py-1.5 font-semibold text-[#135f52]"
                   >
                     <GraduationCap size={16} /> Student Login
-                  </Link>
-                  <Link
+                  </motion.a>
+                  <motion.a whileHover={{ rotateX: 2, rotateY: -2, scale: 1.02, z: 20 }} transition={{ type: "spring", stiffness: 300 }} as={Link}
                     href="/login/college"
                     onClick={() => setMenuOpen(false)}
                     className="flex items-center gap-2 py-1.5 font-semibold text-[#135f52]"
                   >
                     <Building2 size={16} /> College Login
-                  </Link>
-                  <Link
+                  </motion.a>
+                  <motion.a whileHover={{ rotateX: 2, rotateY: -2, scale: 1.02, z: 20 }} transition={{ type: "spring", stiffness: 300 }} as={Link}
                     href="/login/recruiter"
                     onClick={() => setMenuOpen(false)}
                     className="flex items-center gap-2 py-1.5 font-semibold text-[#135f52]"
                   >
                     <Briefcase size={16} /> Recruiter Login
-                  </Link>
+                  </motion.a>
                 </div>
               </div>
 
               {isAuthenticated ? (
-                <Link href={userWorkspaceLink} onClick={() => setMenuOpen(false)} className="rounded-md bg-[#135f52] p-2.5 text-center font-semibold text-white">
+                <motion.a whileHover={{ rotateX: 2, rotateY: -2, scale: 1.02, z: 20 }} transition={{ type: "spring", stiffness: 300 }} as={Link} href={userWorkspaceLink} onClick={() => setMenuOpen(false)} className="rounded-md bg-[#135f52] p-2.5 text-center font-semibold text-white">
                   Go to Workspace
-                </Link>
+                </motion.a>
               ) : (
-                <Link href="/register/student" onClick={() => setMenuOpen(false)} className="rounded-md bg-[#135f52] p-2.5 text-center font-semibold text-white">
+                <motion.a whileHover={{ rotateX: 2, rotateY: -2, scale: 1.02, z: 20 }} transition={{ type: "spring", stiffness: 300 }} as={Link} href="/register/student" onClick={() => setMenuOpen(false)} className="rounded-md bg-[#135f52] p-2.5 text-center font-semibold text-white">
                   Get Started (Student)
-                </Link>
+                </motion.a>
               )}
             </div>
           </div>
         )}
       </header>
 
-      <main>
-        <section className="app-grid relative overflow-hidden border-b border-[#dfe8e2]">
+      <main className="overflow-hidden">
+        <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8 }} className="app-grid relative overflow-hidden border-b border-[#dfe8e2]">
           <div className="mx-auto grid max-w-7xl gap-14 px-5 pb-20 pt-16 lg:grid-cols-[.92fr_1.08fr] lg:px-8 lg:pb-28 lg:pt-24">
             <div className="animate-in max-w-xl self-center">
               <div className="eyebrow mb-6 flex items-center gap-2">
@@ -239,23 +240,23 @@ export default function Home() {
                 Build your career.
               </h1>
               <p className="mt-7 max-w-lg text-lg leading-8 text-[#5f706a]">
-                An evidence-based career readiness platform that helps students understand what they can demonstrate â€” backed by real academic records, verified artifacts, and transparent intelligence.
+                An evidence-based career readiness platform that helps students understand what they can demonstrate — backed by real academic records, verified artifacts, and transparent intelligence.
               </p>
               <div className="mt-9 flex flex-wrap items-center gap-3">
                 {isAuthenticated ? (
-                  <Link
+                  <motion.a whileHover={{ rotateX: 2, rotateY: -2, scale: 1.02, z: 20 }} transition={{ type: "spring", stiffness: 300 }} as={Link}
                     href={userWorkspaceLink}
                     className="rounded-md bg-[#135f52] px-5 py-3.5 text-sm font-semibold text-white shadow-lg shadow-[#135f52]/15 transition hover:-translate-y-0.5 hover:bg-[#0d5146]"
                   >
                     Open my workspace <ArrowRight className="ml-2 inline" size={16} />
-                  </Link>
+                  </motion.a>
                 ) : (
-                  <Link
+                  <motion.a whileHover={{ rotateX: 2, rotateY: -2, scale: 1.02, z: 20 }} transition={{ type: "spring", stiffness: 300 }} as={Link}
                     href="/register/student"
                     className="rounded-md bg-[#135f52] px-5 py-3.5 text-sm font-semibold text-white shadow-lg shadow-[#135f52]/15 transition hover:-translate-y-0.5 hover:bg-[#0d5146]"
                   >
                     Check my readiness <ArrowRight className="ml-2 inline" size={16} />
-                  </Link>
+                  </motion.a>
                 )}
                 <a
                   href="#how-it-works"
@@ -277,7 +278,7 @@ export default function Home() {
             {/* Apple-inspired 3D Interactive Device & Card Preview */}
             <DevicePreview3D className="animate-in [animation-delay:120ms] lg:pl-4" />
           </div>
-        </section>
+        </motion.section>
 
         <section className="mx-auto max-w-7xl px-5 py-20 lg:px-8" id="how-it-works">
           <div className="max-w-2xl">
@@ -286,7 +287,7 @@ export default function Home() {
               A better signal for the work beyond the transcript.
             </h2>
             <p className="mt-4 text-base leading-7 text-[#64756e]">
-              Career OS brings scattered proof of capability into one explainable profile â€” so a student knows what to work on, a college knows where to intervene, and a recruiter knows what they are seeing.
+              Career OS brings scattered proof of capability into one explainable profile — so a student knows what to work on, a college knows where to intervene, and a recruiter knows what they are seeing.
             </p>
           </div>
           <div className="mt-12 grid border-y border-[#dce7e1] md:grid-cols-4">
@@ -303,9 +304,9 @@ export default function Home() {
               </div>
             ))}
           </div>
-        </section>
+        </motion.section>
 
-        <section className="border-y border-[#dce7e1] bg-[#edf3ef]" id="for-teams">
+        <motion.section initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-100px" }} transition={{ duration: 0.6 }} className="border-y border-[#dce7e1] bg-[#edf3ef]" id="for-teams">
           <div className="mx-auto max-w-7xl px-5 py-20 lg:px-8">
             <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
               <div>
@@ -318,12 +319,12 @@ export default function Home() {
                 Built for the students, administrators, and hiring teams who value demonstrated capability.
               </p>
             </div>
-            <div className="mt-10 grid gap-4 md:grid-cols-3">
+            <div className="mt-10 grid gap-4 md:grid-cols-3" style={{ perspective: "1000px" }}>
               {roles.map(({ title, copy, href, icon: Icon }) => (
-                <Link
+                <motion.a whileHover={{ rotateX: 2, rotateY: -2, scale: 1.02, z: 20 }} transition={{ type: "spring", stiffness: 300 }} as={Link}
                   key={href}
                   href={href}
-                  className="group rounded-xl border border-[#d5e2da] bg-white p-6 transition hover:-translate-y-1 hover:border-[#a8c6b9] hover:shadow-lg"
+                  className="group rounded-xl border border-[#d5e2da] bg-white p-6 transition-all hover:-translate-y-1 hover:border-[#a8c6b9] hover:shadow-xl relative"
                 >
                   <div className="flex items-start justify-between">
                     <span className="grid h-10 w-10 place-items-center rounded-lg bg-[#e6f1ec] text-[#135f52]">
@@ -333,20 +334,20 @@ export default function Home() {
                   </div>
                   <h3 className="mt-12 font-display text-lg font-semibold">{title}</h3>
                   <p className="mt-2 text-sm leading-6 text-[#6f8079]">{copy}</p>
-                </Link>
+                </motion.a>
               ))}
             </div>
           </div>
-        </section>
+        </motion.section>
 
-        <section className="mx-auto grid max-w-7xl gap-12 px-5 py-20 lg:grid-cols-[.9fr_1.1fr] lg:items-center lg:px-8" id="passport">
+        <motion.section initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-100px" }} transition={{ duration: 0.6 }} className="mx-auto grid max-w-7xl gap-12 px-5 py-20 lg:grid-cols-[.9fr_1.1fr] lg:items-center lg:px-8" id="passport">
           <div>
             <div className="eyebrow">Employability Passport</div>
             <h2 className="font-display mt-4 text-3xl font-semibold tracking-tight md:text-4xl">
               The story behind the score.
             </h2>
             <p className="mt-5 max-w-lg text-base leading-7 text-[#64756e]">
-              A shareable profile that keeps evidence, consent, verification, skill signals, and career direction together â€” designed to be actionable in interviews, not just on paper.
+              A shareable profile that keeps evidence, consent, verification, skill signals, and career direction together — designed to be actionable in interviews, not just on paper.
             </p>
             <ul className="mt-7 space-y-3 text-sm text-[#49635a]">
               {[
@@ -374,7 +375,7 @@ export default function Home() {
                 </span>
                 <div>
                   <p className="text-sm font-semibold">Candidate Passport</p>
-                  <p className="text-xs text-[#7e8d87]">Target Role Â· Class of 2026</p>
+                  <p className="text-xs text-[#7e8d87]">Target Role · Class of 2026</p>
                 </div>
               </div>
               <span className="flex items-center gap-1.5 text-xs font-semibold text-[#187563]">
@@ -411,9 +412,9 @@ export default function Home() {
               </div>
             </div>
           </div>
-        </section>
+        </motion.section>
 
-        <section className="bg-[#143a32] text-white">
+        <motion.section initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-100px" }} transition={{ duration: 0.6 }} className="bg-[#143a32] text-white">
           <div className="mx-auto flex max-w-7xl flex-col justify-between gap-8 px-5 py-16 md:flex-row md:items-center lg:px-8">
             <div>
               <div className="eyebrow text-[#b8d4c8]">Start with a clearer signal</div>
@@ -437,11 +438,11 @@ export default function Home() {
               </button>
             )}
           </div>
-        </section>
+        </motion.section>
       </main>
       <footer className="border-t border-[#dce7e1] bg-[#f7f8f5]">
         <div className="mx-auto flex max-w-7xl flex-col gap-3 px-5 py-7 text-xs text-[#75857e] md:flex-row md:items-center md:justify-between lg:px-8">
-          <p>Â© 2026 Career OS â€” Career Readiness Intelligence Platform</p>
+          <p>© 2026 Career OS — Career Readiness Intelligence Platform</p>
           <p className="flex items-center gap-2">
             <Github size={14} /> Built for evidence, not optics <ChevronDown size={13} />
           </p>

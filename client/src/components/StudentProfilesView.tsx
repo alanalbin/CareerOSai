@@ -28,6 +28,50 @@ export default function StudentProfilesView() {
   const utils = trpc.useUtils();
   const profilesQuery = trpc.student.getProfessionalProfiles.useQuery();
 
+  const [liCertificates, setLiCertificates] = useState<any>(null);
+  
+  const uploadMutation = trpc.documents.upload.useMutation();
+  const extractCertificatesMutation = trpc.student.extractLinkedInCertificates.useMutation({
+    onSuccess: (data) => {
+      setLiCertificates(data.certificates);
+      toast.success("Certificates extracted from LinkedIn successfully!");
+    },
+    onError: (err) => toast.error(err.message)
+  });
+
+  const handleLinkedInUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    toast.info("Uploading and processing LinkedIn document...");
+    const reader = new FileReader();
+    reader.onload = async () => {
+      try {
+        const base64 = reader.result as string;
+        const uploadRes = await uploadMutation.mutateAsync({
+          fileName: file.name,
+          mimeType: file.type,
+          fileBase64: base64,
+          documentType: "CERTIFICATE"
+        });
+        
+        await extractCertificatesMutation.mutateAsync({ documentId: uploadRes.documentId });
+      } catch (err: any) {
+        toast.error("Failed to process document: " + err.message);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const [ghAnalysis, setGhAnalysis] = useState<any>(null);
+  const analyzeGithubMutation = trpc.student.analyzeGithub.useMutation({
+    onSuccess: (data) => {
+      setGhAnalysis(data.analysis);
+      toast.success("GitHub repository analysis complete.");
+    },
+    onError: (err) => toast.error(err.message)
+  });
+
   // Auto-Resume Modal
   const [resumeModalOpen, setResumeModalOpen] = useState(false);
   const [resumeMarkdown, setResumeMarkdown] = useState("");
@@ -220,6 +264,46 @@ export default function StudentProfilesView() {
                   </div>
                 </div>
 
+                {/* AI Insights */}
+                <div className="rounded-lg border border-[#e7eeea] p-4 bg-[#f8f9fc]">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="flex items-center gap-2 text-sm font-semibold text-[#6366f1]">
+                      <Sparkles size={16} /> AI Repository Analysis
+                    </span>
+                    <Button 
+                      onClick={() => analyzeGithubMutation.mutate()}
+                      disabled={analyzeGithubMutation.isPending}
+                      variant="outline" 
+                      size="sm"
+                      className="h-7 text-xs border-[#6366f1] text-[#6366f1] hover:bg-[#eef0ff]"
+                    >
+                      {analyzeGithubMutation.isPending ? <Loader2 className="animate-spin mr-1.5" size={12}/> : null}
+                      {ghAnalysis ? "Re-analyze" : "Analyze Now"}
+                    </Button>
+                  </div>
+                  {ghAnalysis ? (
+                    <div className="space-y-3 text-xs text-[#4b5563]">
+                      <p>{ghAnalysis.summary}</p>
+                      <div>
+                        <span className="font-semibold text-[#374151]">Technical Strengths:</span>
+                        <ul className="list-disc pl-4 mt-1 space-y-0.5">
+                          {ghAnalysis.technicalStrengths?.map((s: string, i: number) => <li key={i}>{s}</li>)}
+                        </ul>
+                      </div>
+                      <div>
+                        <span className="font-semibold text-[#374151]">Areas for Improvement:</span>
+                        <ul className="list-disc pl-4 mt-1 space-y-0.5">
+                          {ghAnalysis.areasForImprovement?.map((s: string, i: number) => <li key={i}>{s}</li>)}
+                        </ul>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-[#6b7280]">
+                      Click analyze to get an AI summary of your coding style and technical strengths based on your public repositories.
+                    </p>
+                  )}
+                </div>
+
                 {/* Recent Repositories */}
                 {github.data?.repos && github.data.repos.length > 0 ? (
                   <div>
@@ -346,6 +430,53 @@ export default function StudentProfilesView() {
                   <p className="text-[#657770] text-[11px] leading-relaxed">
                     Where authorized LinkedIn member APIs are connected, positions, education, and credentials are automatically compared with college records in the Verification Matrix.
                   </p>
+                </div>
+
+                {/* AI LinkedIn OCR */}
+                <div className="rounded-lg border border-[#e7eeea] p-4 bg-[#f8f9fc]">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="flex items-center gap-2 text-sm font-semibold text-[#0a66c2]">
+                      <Sparkles size={16} /> Scan LinkedIn Certificates
+                    </span>
+                    <div className="relative">
+                      <Button 
+                        disabled={uploadMutation.isPending || extractCertificatesMutation.isPending}
+                        variant="outline" 
+                        size="sm"
+                        className="h-7 text-xs border-[#0a66c2] text-[#0a66c2] hover:bg-[#eef0ff]"
+                      >
+                        {uploadMutation.isPending || extractCertificatesMutation.isPending ? <Loader2 className="animate-spin mr-1.5" size={12}/> : null}
+                        Upload Profile PDF / Image
+                      </Button>
+                      <input 
+                        type="file" 
+                        accept="image/*,application/pdf"
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        onChange={handleLinkedInUpload}
+                        disabled={uploadMutation.isPending || extractCertificatesMutation.isPending}
+                      />
+                    </div>
+                  </div>
+                  {liCertificates ? (
+                    <div className="space-y-2 text-xs text-[#4b5563]">
+                      <p className="font-semibold text-[#374151]">Extracted Certificates:</p>
+                      <div className="max-h-32 overflow-y-auto space-y-2 pr-1">
+                        {liCertificates.map((cert: any, i: number) => (
+                          <div key={i} className="border border-[#e5e7eb] rounded p-2 bg-white">
+                            <p className="font-semibold text-[#111827]">{cert.name}</p>
+                            <div className="flex items-center justify-between mt-1 text-[10px] text-[#6b7280]">
+                              <span>{cert.issuer}</span>
+                              <span>{cert.date}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-[#6b7280]">
+                      Since LinkedIn blocks direct scraping, upload a screenshot or PDF of your Certificates section to automatically verify them using AI OCR.
+                    </p>
+                  )}
                 </div>
               </div>
             ) : (

@@ -551,5 +551,139 @@ Given this assessment breakdown, provide a concise, transparent 2-sentence expla
     }
   }
 }
+  // 9. Analyze GitHub Repositories
+  async analyzeGithubRepositories(githubData: any, studentId: number): Promise<AIResponse<{ summary: string; technicalStrengths: string[]; areasForImprovement: string[] }>> {
+    if (!this.isConfigured) {
+      return {
+        success: false,
+        data: null,
+        model: this.model,
+        confidence: 0,
+        inputHash: "",
+        error: "AI service is not configured.",
+      };
+    }
+
+    const payload = { githubData };
+    const inputHash = computeHash(JSON.stringify(payload));
+
+    try {
+      const systemPrompt = `You are a Senior Engineering Manager assessing a junior developer's GitHub portfolio.
+      Analyze the provided public repositories, languages, and stars. 
+      Return a JSON object strictly matching this interface:
+      {
+        "summary": "A 2-sentence summary of their coding focus.",
+        "technicalStrengths": ["string"],
+        "areasForImprovement": ["string"]
+      }`;
+
+      const raw = await this.callChatCompletion(systemPrompt, JSON.stringify(payload));
+      const parsed = JSON.parse(raw);
+
+      await this.recordAnalysis(studentId, "GITHUB_ANALYSIS", inputHash, parsed, 0.90);
+
+      return {
+        success: true,
+        data: parsed,
+        model: this.model,
+        confidence: 0.90,
+        inputHash,
+      };
+    } catch (e: any) {
+      console.error("[Qwen3] GitHub analysis failed:", e);
+      return {
+        success: false,
+        data: null,
+        model: this.model,
+        confidence: 0,
+        inputHash,
+        error: e.message,
+      };
+    }
+  }
+
+  // 10. Generate Focus Fields (Career Roadmap)
+  async generateFocusFields(studentProfile: any, skills: any[]): Promise<AIResponse<{ focusFields: string[]; reasoning: string; actionItems: string[] }>> {
+    if (!this.isConfigured) {
+      return {
+        success: false,
+        data: null,
+        model: this.model,
+        confidence: 0,
+        inputHash: "",
+        error: "AI service is not configured.",
+      };
+    }
+
+    const payload = { studentProfile, skills };
+    const inputHash = computeHash(JSON.stringify(payload));
+
+    try {
+      const systemPrompt = `You are a Career Readiness AI. Analyze the student's profile and skills.
+      Determine what Fields to Focus On to improve their employability.
+      Return a JSON object strictly matching this interface:
+      {
+        "focusFields": ["string (e.g. Cloud Architecture, DevOps)"],
+        "reasoning": "A 2-sentence explanation of why these fields are important.",
+        "actionItems": ["string (e.g. Learn Docker basics, Build a CI/CD pipeline)"]
+      }`;
+
+      const raw = await this.callChatCompletion(systemPrompt, JSON.stringify(payload));
+      const parsed = JSON.parse(raw);
+
+      await this.recordAnalysis(studentProfile.id, "FOCUS_FIELDS_GENERATION", inputHash, parsed, 0.92);
+
+      return {
+        success: true,
+        data: parsed,
+        model: this.model,
+        confidence: 0.92,
+        inputHash,
+      };
+    } catch (e: any) {
+      console.error("[Qwen3] Focus Fields generation failed:", e);
+      return {
+        success: false,
+        data: null,
+        model: this.model,
+        confidence: 0,
+        inputHash,
+        error: e.message,
+      };
+    }
+  }
+}
+  // 11. Extract Certificates from OCR Text
+  async extractCertificatesFromOCR(ocrText: string, studentId: number): Promise<AIResponse<{ certificates: Array<{ name: string; issuer: string; date: string }> }>> {
+    if (!this.isConfigured) {
+      return { success: false, data: null, model: this.model, confidence: 0, inputHash: "", error: "AI service is not configured." };
+    }
+
+    const payload = { ocrText };
+    const inputHash = computeHash(JSON.stringify(payload));
+
+    try {
+      const systemPrompt = `You are a career profile AI. Extract professional certificates and courses from the provided OCR text of a LinkedIn profile or certificate document.
+      Return a JSON object strictly matching this interface:
+      {
+        "certificates": [
+          {
+            "name": "string (e.g. AWS Certified Solutions Architect)",
+            "issuer": "string (e.g. Amazon Web Services)",
+            "date": "string (e.g. Jan 2023 or 2023)"
+          }
+        ]
+      }`;
+
+      const raw = await this.callChatCompletion(systemPrompt, JSON.stringify(payload));
+      const parsed = JSON.parse(raw);
+
+      return { success: true, data: parsed, model: this.model, confidence: 0.90, inputHash };
+    } catch (e: any) {
+      console.error("[Qwen3] Certificate extraction failed:", e);
+      return { success: false, data: null, model: this.model, confidence: 0, inputHash, error: e.message };
+    }
+  }
+}
 
 export const qwen3 = new Qwen3Provider();

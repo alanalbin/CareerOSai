@@ -609,4 +609,74 @@ export const studentRouter = router({
 
     return { success: true, resumeMarkdown: result.data.resumeMarkdown };
   }),
+
+  // 16. Analyze GitHub Repositories
+  analyzeGithub: protectedProcedure.mutation(async ({ ctx }) => {
+    const profile = await getStudentProfileByUserId(ctx.user.id);
+    if (!profile) throw new TRPCError({ code: "NOT_FOUND" });
+
+    const profiles = await getProfessionalProfilesByUserId(ctx.user.id);
+    const github = profiles.find((p: any) => p.provider === "GITHUB");
+    if (!github || !github.metadata) {
+      throw new TRPCError({ code: "BAD_REQUEST", message: "GitHub profile not connected or missing data." });
+    }
+
+    const result = await qwen3.analyzeGithubRepositories(github.metadata, profile.id);
+    if (!result.success || !result.data) {
+      throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: result.error || "AI failed to analyze GitHub repositories." });
+    }
+
+    return { success: true, analysis: result.data };
+  }),
+
+  // 17. Generate Focus Fields (AI Career Roadmap)
+  generateFocusFields: protectedProcedure.mutation(async ({ ctx }) => {
+    const db = await getDb();
+    const profile = await getStudentProfileByUserId(ctx.user.id);
+    if (!profile) throw new TRPCError({ code: "NOT_FOUND" });
+
+    const studentSkills = await db.select({
+      skillName: schema.skills.name,
+      proficiency: schema.studentSkills.proficiency,
+    })
+    .from(schema.studentSkills)
+    .innerJoin(schema.skills, eq(schema.studentSkills.skillId, schema.skills.id))
+    .where(eq(schema.studentSkills.studentId, profile.id));
+
+    const result = await qwen3.generateFocusFields(profile, studentSkills);
+    if (!result.success || !result.data) {
+      throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: result.error || "AI failed to generate focus fields." });
+    }
+
+    return { success: true, roadmap: result.data };
+  }),
+
+  // 18. Extract LinkedIn Certificates via OCR
+  extractLinkedInCertificates: protectedProcedure
+    .input(z.object({
+      documentId: z.number(),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const db = await getDb();
+      const [doc] = await db.select().from(schema.documents).where(eq(schema.documents.id, input.documentId)).limit(1);
+      
+      if (!doc || doc.userId !== ctx.user.id) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Document not found." });
+      }
+
+      if (doc.ocrStatus !== "COMPLETED" || !doc.ocrText) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Document OCR has not completed yet." });
+      }
+
+      const profile = await getStudentProfileByUserId(ctx.user.id);
+      if (!profile) throw new TRPCError({ code: "NOT_FOUND", message: "Student profile not found." });
+
+      const result = await qwen3.extractCertificatesFromOCR(doc.ocrText, profile.id);
+      
+      if (!result.success || !result.data) {
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: result.error || "AI failed to extract certificates." });
+      }
+
+      return { success: true, certificates: result.data.certificates };
+    }),
 });
