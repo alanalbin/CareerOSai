@@ -26,6 +26,27 @@ export default function StudentProfilesView() {
   const utils = trpc.useUtils();
   const profilesQuery = trpc.student.getProfessionalProfiles.useQuery();
 
+  // Auto-Resume Modal
+  const [resumeModalOpen, setResumeModalOpen] = useState(false);
+  const [resumeMarkdown, setResumeMarkdown] = useState("");
+  
+  const generateResumeMutation = trpc.student.generateResume.useMutation({
+    onSuccess: (data) => {
+      setResumeMarkdown(data.resumeMarkdown);
+      toast.success("Resume generated successfully!");
+    },
+    onError: (err) => {
+      toast.error(err.message || "Failed to generate resume.");
+    }
+  });
+
+  const handleGenerateResume = () => {
+    setResumeModalOpen(true);
+    if (!resumeMarkdown) {
+      generateResumeMutation.mutate();
+    }
+  };
+
   // GitHub Modal
   const [ghModalOpen, setGhModalOpen] = useState(false);
   const [ghUsername, setGhUsername] = useState("");
@@ -117,12 +138,20 @@ export default function StudentProfilesView() {
             Connect your official external accounts to import verified code repositories, demonstrated technologies, and public career history.
           </p>
         </div>
-        <Link
-          href="/student/profile-data"
-          className="inline-flex items-center gap-2 rounded-lg bg-[#135f52] px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-[#0d5146]"
-        >
-          <Database size={15} /> Open Profile Data & Verification <ArrowRight size={14} />
-        </Link>
+        <div className="flex gap-2">
+          <Button
+            onClick={handleGenerateResume}
+            className="inline-flex items-center gap-2 rounded-lg bg-[#6366f1] px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-[#4f46e5]"
+          >
+            <Sparkles size={15} /> Auto-Generate Resume
+          </Button>
+          <Link
+            href="/student/profile-data"
+            className="inline-flex items-center gap-2 rounded-lg bg-[#135f52] px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-[#0d5146]"
+          >
+            <Database size={15} /> Open Profile Data & Verification <ArrowRight size={14} />
+          </Link>
+        </div>
       </div>
 
       {/* Profiles Grid */}
@@ -410,6 +439,53 @@ export default function StudentProfilesView() {
               Link LinkedIn Profile
             </Button>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Auto-Resume Dialog */}
+      <Dialog open={resumeModalOpen} onOpenChange={setResumeModalOpen}>
+        <DialogContent className="sm:max-w-3xl bg-white max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="text-[#6366f1]" size={20} /> 
+              AI Auto-Generated Resume
+            </DialogTitle>
+            <DialogDescription>
+              This resume was intelligently structured by AI based on your connected GitHub repositories, LinkedIn profile, verified skills, and academic records.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="mt-4 border border-[#e7eeea] rounded-xl p-6 bg-[#fafafa]">
+            {generateResumeMutation.isPending ? (
+              <div className="flex flex-col items-center justify-center py-12 text-[#71817b]">
+                <Loader2 className="animate-spin text-[#6366f1] mb-3" size={32} />
+                <p className="font-medium text-sm">Analyzing your digital footprints...</p>
+                <p className="text-xs mt-1">Extracting skills, assessing projects, and drafting bullets.</p>
+              </div>
+            ) : resumeMarkdown ? (
+              <pre className="whitespace-pre-wrap font-sans text-sm text-[#14221f]">
+                {resumeMarkdown}
+              </pre>
+            ) : (
+              <div className="py-8 text-center text-sm text-[#71817b]">
+                No resume generated yet.
+              </div>
+            )}
+          </div>
+          <div className="flex justify-end gap-3 mt-2">
+            <Button variant="outline" onClick={() => setResumeModalOpen(false)}>
+              Close
+            </Button>
+            <Button 
+              onClick={() => {
+                navigator.clipboard.writeText(resumeMarkdown);
+                toast.success("Resume copied to clipboard!");
+              }}
+              disabled={!resumeMarkdown || generateResumeMutation.isPending}
+              className="bg-[#135f52] hover:bg-[#0d5146] text-white"
+            >
+              <FileText className="mr-2" size={15} /> Copy Markdown
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

@@ -1,4 +1,4 @@
-﻿import crypto from "crypto";
+import crypto from "crypto";
 import axios from "axios";
 import { getDb, schema } from "../../db";
 
@@ -483,6 +483,71 @@ Given this assessment breakdown, provide a concise, transparent 2-sentence expla
       return response.trim();
     } catch {
       return "Readiness score is calculated from your verified evidence, academic records, project submissions, and target role alignment.";
+    }
+  }
+  // 8. Auto-Generate Resume
+  async generateResumeFromProfiles(
+    githubData: any,
+    linkedinData: any,
+    studentProfile: any,
+    skills: any[],
+    projects: any[],
+    evidence: any[]
+  ): Promise<AIResponse<{ resumeMarkdown: string }>> {
+    if (!this.isConfigured) {
+      return {
+        success: false,
+        data: null,
+        model: this.model,
+        confidence: 0,
+        inputHash: "",
+        error: "AI service is not configured.",
+      };
+    }
+
+    const payload = {
+      githubData,
+      linkedinData,
+      studentProfile,
+      skills,
+      projects,
+      evidence,
+    };
+    const inputHash = computeHash(JSON.stringify(payload));
+
+    try {
+      const systemPrompt = `You are a professional ATS-friendly Resume Writer AI. 
+      You will be provided with a student's GitHub data, LinkedIn profile details, verified skills, and academic profile.
+      Your task is to generate a comprehensive, professional resume formatted entirely in Markdown.
+      Use professional formatting, clear headings (e.g. Education, Experience, Projects, Skills), and impactful bullet points.
+      Return ONLY a JSON object containing a single key "resumeMarkdown" with the generated Markdown string.`;
+
+      const raw = await this.callChatCompletion(systemPrompt, JSON.stringify(payload));
+      const parsed = JSON.parse(raw);
+
+      if (!parsed.resumeMarkdown) {
+        throw new Error("Failed to generate resume Markdown structure.");
+      }
+
+      await this.recordAnalysis(studentProfile.id, "RESUME_GENERATION", inputHash, parsed, 0.95);
+
+      return {
+        success: true,
+        data: { resumeMarkdown: parsed.resumeMarkdown },
+        model: this.model,
+        confidence: 0.95,
+        inputHash,
+      };
+    } catch (e: any) {
+      console.error("[Qwen3] Resume generation failed:", e);
+      return {
+        success: false,
+        data: null,
+        model: this.model,
+        confidence: 0,
+        inputHash,
+        error: e.message,
+      };
     }
   }
 }

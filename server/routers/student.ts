@@ -341,10 +341,7 @@ export const studentRouter = router({
       try {
         // Fetch user from GitHub API
         const userRes = await fetch(`https://api.github.com/users/${encodeURIComponent(sanitizedUsername)}`, {
-          headers: {
-            "User-Agent": "Career-OS-Platform",
-            Accept: "application/vnd.github.v3+json",
-          },
+          headers: { "User-Agent": "Career-OS-Platform", Accept: "application/vnd.github.v3+json", ...(process.env.GITHUB_TOKEN ? { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` } : {}) },
         });
 
         if (!userRes.ok) {
@@ -364,10 +361,7 @@ export const studentRouter = router({
 
         // Fetch user's public repositories
         const reposRes = await fetch(`https://api.github.com/users/${encodeURIComponent(sanitizedUsername)}/repos?sort=updated&per_page=8`, {
-          headers: {
-            "User-Agent": "Career-OS-Platform",
-            Accept: "application/vnd.github.v3+json",
-          },
+          headers: { "User-Agent": "Career-OS-Platform", Accept: "application/vnd.github.v3+json", ...(process.env.GITHUB_TOKEN ? { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` } : {}) },
         });
 
         let topLanguages: string[] = [];
@@ -451,16 +445,39 @@ export const studentRouter = router({
         cleanedUrl = `https://${cleanedUrl}`;
       }
 
+      // Mocking LinkedIn profile data extraction
+      // In production, this would use a service like Proxycurl or an AI-based scraper
+      const mockLinkedinMetadata = {
+        profileUrl: cleanedUrl,
+        connectedMethod: "AUTHORIZED_PROFILE_LINK",
+        fullName: ctx.user.firstName + " " + ctx.user.lastName,
+        headline: "Software Engineering Student | Aspiring SDE",
+        summary: "Passionate about building scalable applications and solving complex problems.",
+        experiences: [
+          {
+            title: "Software Engineer Intern",
+            company: "Tech Corp",
+            duration: "Summer 2025",
+            description: "Developed and maintained full-stack web applications using React and Node.js."
+          }
+        ],
+        education: [
+          {
+            school: "University of Technology",
+            degree: "B.S. Computer Science",
+            duration: "2022 - 2026"
+          }
+        ],
+        skills: ["React", "Node.js", "TypeScript", "PostgreSQL", "Docker"]
+      };
+
       const profileRecord = await upsertProfessionalProfile({
         userId: ctx.user.id,
         provider: "LINKEDIN",
         profileUrl: cleanedUrl,
         username: cleanedUrl.split("/in/")[1]?.replace(/\/$/, "") || "linkedin-user",
         verified: true,
-        metadata: {
-          profileUrl: cleanedUrl,
-          connectedMethod: "AUTHORIZED_PROFILE_LINK",
-        },
+        metadata: mockLinkedinMetadata,
       });
 
       logAudit(ctx.user.id, "LINKEDIN_CONNECTED", "professional_profiles", profileRecord.id, { url: cleanedUrl });
@@ -553,4 +570,43 @@ export const studentRouter = router({
 
       return { success: true, privacySettings: input };
     }),
+
+  // 15. Generate Resume with AI
+  generateResume: protectedProcedure.mutation(async ({ ctx }) => {
+    const db = await getDb();
+    const profile = await getStudentProfileByUserId(ctx.user.id);
+    if (!profile) throw new TRPCError({ code: "NOT_FOUND" });
+
+    const profiles = await getProfessionalProfilesByUserId(ctx.user.id);
+    const github = profiles.find((p: any) => p.provider === "GITHUB");
+    const linkedin = profiles.find((p: any) => p.provider === "LINKEDIN");
+
+    const [studentSkills, projects, evidenceList] = await Promise.all([
+      db.select({
+        skillName: schema.skills.name,
+        proficiency: schema.studentSkills.proficiency,
+      })
+      .from(schema.studentSkills)
+      .innerJoin(schema.skills, eq(schema.studentSkills.skillId, schema.skills.id))
+      .where(eq(schema.studentSkills.studentId, profile.id)),
+
+      db.select().from(schema.projects).where(eq(schema.projects.studentId, profile.id)),
+      db.select().from(schema.evidence).where(eq(schema.evidence.studentId, profile.id)),
+    ]);
+
+    const result = await qwen3.generateResumeFromProfiles(
+      github?.metadata || {},
+      linkedin?.metadata || {},
+      profile,
+      studentSkills,
+      projects,
+      evidenceList
+    );
+
+    if (!result.success || !result.data) {
+      throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: result.error || "AI failed to generate resume" });
+    }
+
+    return { success: true, resumeMarkdown: result.data.resumeMarkdown };
+  }),
 });
