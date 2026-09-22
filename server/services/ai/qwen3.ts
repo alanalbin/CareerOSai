@@ -550,7 +550,6 @@ Given this assessment breakdown, provide a concise, transparent 2-sentence expla
       };
     }
   }
-}
   // 9. Analyze GitHub Repositories
   async analyzeGithubRepositories(githubData: any, studentId: number): Promise<AIResponse<{ summary: string; technicalStrengths: string[]; areasForImprovement: string[] }>> {
     if (!this.isConfigured) {
@@ -652,7 +651,6 @@ Given this assessment breakdown, provide a concise, transparent 2-sentence expla
       };
     }
   }
-}
   // 11. Extract Certificates from OCR Text
   async extractCertificatesFromOCR(ocrText: string, studentId: number): Promise<AIResponse<{ certificates: Array<{ name: string; issuer: string; date: string }> }>> {
     if (!this.isConfigured) {
