@@ -280,7 +280,7 @@ export default function Home() {
           </div>
         </motion.section>
 
-        <section className="mx-auto max-w-7xl px-5 py-20 lg:px-8" id="how-it-works">
+        <motion.section initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-100px" }} transition={{ duration: 0.6 }} className="mx-auto max-w-7xl px-5 py-20 lg:px-8" id="how-it-works">
           <div className="max-w-2xl">
             <div className="eyebrow">From raw data to readiness</div>
             <h2 className="font-display mt-4 text-3xl font-semibold tracking-tight md:text-4xl">
