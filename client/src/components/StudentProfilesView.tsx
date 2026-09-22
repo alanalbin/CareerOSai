@@ -19,7 +19,9 @@ import {
   Star,
   GitFork,
   ArrowRight,
-  Database
+  Database,
+  Sparkles,
+  FileText
 } from "lucide-react";
 
 export default function StudentProfilesView() {
