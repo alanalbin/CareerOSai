@@ -12,7 +12,7 @@ git commit -m "Initial commit - Career OS Production Build"
 echo.
 echo Setting up GitHub connection...
 git branch -M main
-git remote add origin https://github.com/alanalbin/careeros.git
+git remote add origin https://github.com/alanalbin/CareerOSai.git
 
 echo.
 echo Pushing to GitHub (A login window may pop up!)...
