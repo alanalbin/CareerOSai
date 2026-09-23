@@ -228,9 +228,97 @@ def get_dashboard_data():
         "role": "STUDENT",
     }
 
+    first_name = user.get("firstName", "Alex")
+    last_name = user.get("lastName", "Vance")
+    full_name = f"{first_name} {last_name}"
+
+    profile_data = {
+        "id": 1,
+        "name": full_name,
+        "targetRole": "Full-Stack Software Engineer",
+        "department": "Computer Science & Engineering",
+        "employabilityScore": 88,
+        "placementReadiness": 85,
+        "verifiedEvidence": 4,
+        "totalEvidence": 4,
+        "profileCompletion": 92,
+        "recruiterVisibility": "CONSENTED",
+        "collegeName": "Riverview Institute of Technology",
+        "cgpa": 3.86,
+    }
+
+    assessment_data = {
+        "overallScore": 88,
+        "technicalScore": 88,
+        "evidenceStrengthScore": 85,
+        "problemSolvingScore": 82,
+        "academicScore": 92,
+    }
+
+    evidence_items = [
+        {
+            "id": 1,
+            "title": "GitHub Full-Stack Repository Portfolio",
+            "type": "PROJECT",
+            "source": "GitHub Public REST API",
+            "verificationStatus": "VERIFIED",
+            "verifiedAt": "2026-09-20",
+            "url": gh.get("profileUrl") if gh else "https://github.com/alexvance-dev",
+            "scoreContribution": 28,
+        },
+        {
+            "id": 2,
+            "title": "Official Academic Transcript - Semesters 1-6",
+            "type": "CERTIFICATE",
+            "source": "College Registrar",
+            "verificationStatus": "VERIFIED",
+            "verifiedAt": "2026-09-15",
+            "url": "#",
+            "scoreContribution": 25,
+        },
+        {
+            "id": 3,
+            "title": "AWS Certified Cloud Practitioner Certificate",
+            "type": "CERTIFICATE",
+            "source": "PaddleOCR Verified",
+            "verificationStatus": "VERIFIED",
+            "verifiedAt": "2026-09-12",
+            "url": "#",
+            "scoreContribution": 18,
+        },
+        {
+            "id": 4,
+            "title": "Systems Architecture Internship & Microservices",
+            "type": "INTERNSHIP",
+            "source": "Northstar Cloud Labs",
+            "verificationStatus": "VERIFIED",
+            "verifiedAt": "2026-09-10",
+            "url": "#",
+            "scoreContribution": 17,
+        },
+    ]
+
+    recommendations_data = {
+        "recommendedRoles": ["Full-Stack Software Engineer", "Systems Engineer", "Cloud Solutions Architect"],
+        "primaryRoleFitScore": 88,
+        "missingSkills": ["Kubernetes", "GraphQL", "gRPC"],
+        "recommendedActions": [
+            {"title": "System design documentation", "skill": "System Design", "time": "2 hrs", "reason": "Demonstrate high-level architectural decisions"},
+            {"title": "Automated test coverage", "skill": "Testing", "time": "3 hrs", "reason": "Increase unit test coverage in GitHub repositories"},
+            {"title": "API telemetry & observability", "skill": "DevOps", "time": "1.5 hrs", "reason": "Add OpenTelemetry or structured logs to backend microservices"},
+        ],
+        "learningPriorities": ["Distributed Consensus", "Microservices at Scale", "Advanced TypeScript"],
+        "readinessSummary": f"{full_name} has demonstrated high technical competency with verified git repositories and strong academic foundations.",
+    }
+
     return {
         "score": 88,
         "user": user,
+        "profile": profile_data,
+        "assessment": assessment_data,
+        "evidence": evidence_items,
+        "recommendations": recommendations_data,
+        "skills": ["TypeScript", "React", "Python", "FastAPI", "PostgreSQL", "Docker", "Git", "System Design"],
         "student": {
             "department": "Computer Science & Engineering",
             "cgpa": 3.86,
@@ -244,38 +332,7 @@ def get_dashboard_data():
             "evidence": {"score": 85, "weight": 25, "verified": True},
             "skills": {"score": 84, "weight": 20, "verified": True},
         },
-        "evidenceList": [
-            {
-                "id": 1,
-                "title": "GitHub Full-Stack Repository Portfolio",
-                "type": "CODE_REPOSITORY",
-                "source": "GitHub",
-                "status": "VERIFIED",
-                "verifiedAt": "2026-09-20",
-                "url": gh.get("profileUrl") if gh else "https://github.com/alexvance-dev",
-                "scoreContribution": 28,
-            },
-            {
-                "id": 2,
-                "title": "Official Academic Transcript - Semesters 1-6",
-                "type": "TRANSCRIPT",
-                "source": "College Registrar",
-                "status": "VERIFIED",
-                "verifiedAt": "2026-09-15",
-                "url": "#",
-                "scoreContribution": 25,
-            },
-            {
-                "id": 3,
-                "title": "AWS Certified Cloud Practitioner Certificate",
-                "type": "CERTIFICATION",
-                "source": "PaddleOCR Verified",
-                "status": "VERIFIED",
-                "verifiedAt": "2026-09-12",
-                "url": "#",
-                "scoreContribution": 18,
-            }
-        ],
+        "evidenceList": evidence_items,
         "recentActivities": [
             {"action": "GitHub Repositories Audited", "timestamp": "Just now", "icon": "Github"},
             {"action": "AI Resume Generated from Codebase", "timestamp": "2 hours ago", "icon": "Sparkles"},

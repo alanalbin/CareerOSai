@@ -68,15 +68,19 @@ export function useAuth(options?: UseAuthOptions) {
     }
   }, [logoutMutation]);
 
+  // Synchronize server user with localStorage in an effect, NOT during render
+  useEffect(() => {
+    const serverUser = meQuery.data?.user;
+    if (serverUser && JSON.stringify(serverUser) !== JSON.stringify(localUser)) {
+      setPersistedUser(serverUser);
+    }
+  }, [meQuery.data?.user, localUser]);
+
   const state = useMemo(() => {
     const rawData = meQuery.data;
     // Prefer server meQuery, fallback to localStorage user
     const user = rawData?.user ?? localUser ?? null;
     const profile = rawData?.profile ?? null;
-
-    if (rawData?.user && JSON.stringify(rawData.user) !== JSON.stringify(localUser)) {
-      setPersistedUser(rawData.user);
-    }
 
     return {
       user,

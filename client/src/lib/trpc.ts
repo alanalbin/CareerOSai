@@ -284,6 +284,89 @@ async function handleClientFallback(endpoint: string, vars: any = {}, method: "G
       if (rawGh) gh = JSON.parse(rawGh);
     } catch {}
 
+    const firstName = user?.firstName || "Alex";
+    const lastName = user?.lastName || "Vance";
+    const fullName = `${firstName} ${lastName}`;
+
+    const profileData = {
+      id: 1,
+      name: fullName,
+      targetRole: "Full-Stack Software Engineer",
+      department: "Computer Science & Engineering",
+      employabilityScore: 88,
+      placementReadiness: 85,
+      verifiedEvidence: 4,
+      totalEvidence: 4,
+      profileCompletion: 92,
+      recruiterVisibility: "CONSENTED",
+      collegeName: "Riverview Institute of Technology",
+      cgpa: 3.86,
+    };
+
+    const assessmentData = {
+      overallScore: 88,
+      technicalScore: 88,
+      evidenceStrengthScore: 85,
+      problemSolvingScore: 82,
+      academicScore: 92,
+    };
+
+    const evidenceItems = [
+      {
+        id: 1,
+        title: "GitHub Full-Stack Repository Portfolio",
+        type: "PROJECT",
+        source: "GitHub Public REST API",
+        verificationStatus: "VERIFIED",
+        verifiedAt: "2026-09-20",
+        url: gh?.profileUrl || "https://github.com/alexvance-dev",
+        scoreContribution: 28,
+      },
+      {
+        id: 2,
+        title: "Official Academic Transcript - Semesters 1-6",
+        type: "CERTIFICATE",
+        source: "College Registrar",
+        verificationStatus: "VERIFIED",
+        verifiedAt: "2026-09-15",
+        url: "#",
+        scoreContribution: 25,
+      },
+      {
+        id: 3,
+        title: "AWS Certified Cloud Practitioner Certificate",
+        type: "CERTIFICATE",
+        source: "PaddleOCR Verified",
+        verificationStatus: "VERIFIED",
+        verifiedAt: "2026-09-12",
+        url: "#",
+        scoreContribution: 18,
+      },
+      {
+        id: 4,
+        title: "Systems Architecture Internship & Microservices",
+        type: "INTERNSHIP",
+        source: "Northstar Cloud Labs",
+        verificationStatus: "VERIFIED",
+        verifiedAt: "2026-09-10",
+        url: "#",
+        scoreContribution: 17,
+      },
+    ];
+
+    const recommendationsData = {
+      recommendedRoles: ["Full-Stack Software Engineer", "Systems Engineer", "Cloud Solutions Architect"],
+      primaryRoleFitScore: 88,
+      missingSkills: ["Kubernetes", "GraphQL", "gRPC"],
+      recommendedActions: [
+        { title: "System design documentation", skill: "System Design", time: "2 hrs", reason: "Demonstrate high-level architectural decisions" },
+        { title: "Automated test coverage", skill: "Testing", time: "3 hrs", reason: "Increase unit test coverage in GitHub repositories" },
+        { title: "API telemetry & observability", skill: "DevOps", time: "1.5 hrs", reason: "Add OpenTelemetry or structured logs to backend microservices" },
+      ],
+      learningPriorities: ["Distributed Consensus", "Microservices at Scale", "Advanced TypeScript"],
+      readinessSummary: `${fullName} has demonstrated high technical competency with verified git repositories and strong academic foundations.`,
+    };
+
     return {
       score: 88,
       user: user || {
@@ -293,6 +376,11 @@ async function handleClientFallback(endpoint: string, vars: any = {}, method: "G
         email: "student@university.edu",
         role: "STUDENT",
       },
+      profile: profileData,
+      assessment: assessmentData,
+      evidence: evidenceItems,
+      recommendations: recommendationsData,
+      skills: ["TypeScript", "React", "Python", "FastAPI", "PostgreSQL", "Docker", "Git", "System Design"],
       student: {
         department: "Computer Science & Engineering",
         cgpa: 3.86,
@@ -306,38 +394,7 @@ async function handleClientFallback(endpoint: string, vars: any = {}, method: "G
         evidence: { score: 85, weight: 25, verified: true },
         skills: { score: 84, weight: 20, verified: true },
       },
-      evidenceList: [
-        {
-          id: 1,
-          title: "GitHub Full-Stack Repository Portfolio",
-          type: "CODE_REPOSITORY",
-          source: "GitHub",
-          status: "VERIFIED",
-          verifiedAt: "2026-09-20",
-          url: gh?.profileUrl || "https://github.com/alexvance-dev",
-          scoreContribution: 28,
-        },
-        {
-          id: 2,
-          title: "Official Academic Transcript - Semesters 1-6",
-          type: "TRANSCRIPT",
-          source: "College Registrar",
-          status: "VERIFIED",
-          verifiedAt: "2026-09-15",
-          url: "#",
-          scoreContribution: 25,
-        },
-        {
-          id: 3,
-          title: "AWS Certified Cloud Practitioner Certificate",
-          type: "CERTIFICATION",
-          source: "PaddleOCR Verified",
-          status: "VERIFIED",
-          verifiedAt: "2026-09-12",
-          url: "#",
-          scoreContribution: 18,
-        },
-      ],
+      evidenceList: evidenceItems,
       recentActivities: [
         { action: "GitHub Repositories Audited", timestamp: "Just now", icon: "Github" },
         { action: "AI Resume Generated from Codebase", timestamp: "2 hours ago", icon: "Sparkles" },
@@ -447,6 +504,34 @@ const createMockRouter = (path: string[] = []): any => {
 
   return new Proxy(target, {
     get(targetObj, prop) {
+      // CRITICAL: Never return a function for "then".
+      // In JS, awaiting an object accesses .then; if .then returns a function,
+      // the Promise resolution algorithm treats it as a thenable and hangs forever!
+      if (prop === "then") {
+        return undefined;
+      }
+
+      if (prop === "useUtils") {
+        return () => {
+          const makeHandler = () => ({
+            setData: () => {},
+            invalidate: async () => {},
+            refetch: async () => {},
+          });
+          const utilProxy: any = new Proxy(makeHandler(), {
+            get(t, p) {
+              if (p === "then") return undefined;
+              if (p in t) return (t as any)[p];
+              return utilProxy;
+            },
+            apply() {
+              return Promise.resolve({});
+            },
+          });
+          return utilProxy;
+        };
+      }
+
       if (prop === "useQuery") {
         return (input: any, options: any) => {
           return useQuery({

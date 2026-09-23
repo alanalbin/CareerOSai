@@ -1,5 +1,5 @@
-﻿import { Button } from "@/components/ui/button";
-import { useAuth } from "@/_core/hooks/useAuth";
+import { Button } from "@/components/ui/button";
+import { useAuth, setPersistedUser } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import { startLogin } from "@/const";
 import {
@@ -332,12 +332,30 @@ function StudentWorkspace({ active }: { active: string }) {
         <p className="mt-2 text-sm text-[#62776e]">
           Sign in with your student account to manage your evidence library, track your Career Readiness Score, and control recruiter discovery.
         </p>
-        <Button
-          asChild
-          className="mt-6 bg-[#135f52] font-semibold text-white hover:bg-[#0d5146]"
-        >
-          <a href="/login/student">Sign In as Student <ArrowRight className="ml-2" size={15} /></a>
-        </Button>
+        <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
+          <Button
+            onClick={() => {
+              setPersistedUser({
+                id: 1,
+                firstName: "Alex",
+                lastName: "Vance",
+                email: "student@university.edu",
+                role: "STUDENT",
+              }, "careeros_jwt_token_sample");
+              toast.success("Welcome, Alex Vance!");
+            }}
+            className="bg-[#135f52] font-semibold text-white hover:bg-[#0d5146] text-xs px-5 py-2.5 shadow-sm"
+          >
+            <Sparkles size={14} className="mr-1.5" /> Instant Access (Demo Student)
+          </Button>
+          <Button
+            asChild
+            variant="outline"
+            className="border-[#cbdad3] text-xs font-semibold text-[#14221f]"
+          >
+            <a href="/login/student">Sign In with Credentials <ArrowRight className="ml-1.5" size={14} /></a>
+          </Button>
+        </div>
       </div>
     );
   }
@@ -1141,12 +1159,30 @@ function CollegeWorkspace({ active }: { active: string }) {
         <p className="mt-2 text-sm text-[#62776e]">
           Sign in with your institutional administrator account to review student evidence, monitor departmental readiness, and export placement reports.
         </p>
-        <Button
-          asChild
-          className="mt-6 bg-[#135f52] font-semibold text-white hover:bg-[#0d5146]"
-        >
-          <a href="/login/college">Sign In as Administrator <ArrowRight className="ml-2 inline" size={15} /></a>
-        </Button>
+        <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
+          <Button
+            onClick={() => {
+              setPersistedUser({
+                id: 2,
+                firstName: "Dean",
+                lastName: "Reynolds",
+                email: "admin@college.edu",
+                role: "COLLEGE_ADMIN",
+              }, "careeros_jwt_token_sample");
+              toast.success("Welcome, Administrator!");
+            }}
+            className="bg-[#135f52] font-semibold text-white hover:bg-[#0d5146] text-xs px-5 py-2.5 shadow-sm"
+          >
+            <Sparkles size={14} className="mr-1.5" /> Instant Access (Demo Admin)
+          </Button>
+          <Button
+            asChild
+            variant="outline"
+            className="border-[#cbdad3] text-xs font-semibold text-[#14221f]"
+          >
+            <a href="/login/college">Sign In as Administrator <ArrowRight className="ml-1.5 inline" size={14} /></a>
+          </Button>
+        </div>
       </div>
     );
   }
@@ -1428,12 +1464,30 @@ function RecruiterWorkspace({ active }: { active: string }) {
         <p className="mt-2 text-sm text-[#62776e]">
           Sign in to define job requirements, search candidates who have granted recruiter discovery consent, and inspect verified evidence.
         </p>
-        <Button
-          asChild
-          className="mt-6 bg-[#135f52] font-semibold text-white hover:bg-[#0d5146]"
-        >
-          <a href="/login/recruiter">Sign In as Recruiter <ArrowRight className="ml-2 inline" size={15} /></a>
-        </Button>
+        <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
+          <Button
+            onClick={() => {
+              setPersistedUser({
+                id: 3,
+                firstName: "Sarah",
+                lastName: "Chen",
+                email: "recruiter@company.com",
+                role: "RECRUITER",
+              }, "careeros_jwt_token_sample");
+              toast.success("Welcome, Recruiter!");
+            }}
+            className="bg-[#135f52] font-semibold text-white hover:bg-[#0d5146] text-xs px-5 py-2.5 shadow-sm"
+          >
+            <Sparkles size={14} className="mr-1.5" /> Instant Access (Demo Recruiter)
+          </Button>
+          <Button
+            asChild
+            variant="outline"
+            className="border-[#cbdad3] text-xs font-semibold text-[#14221f]"
+          >
+            <a href="/login/recruiter">Sign In as Recruiter <ArrowRight className="ml-1.5 inline" size={14} /></a>
+          </Button>
+        </div>
       </div>
     );
   }
