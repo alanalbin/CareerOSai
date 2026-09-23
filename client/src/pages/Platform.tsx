@@ -389,7 +389,7 @@ function StudentWorkspace({ active }: { active: string }) {
             {profile?.name ? `Welcome, ${profile.name.split(" ")[0]}.` : "Welcome."}
           </h2>
           <p className="mt-1.5 text-sm text-[#71817b]">
-            Target role: <strong className="text-[#31574d]">{profile?.targetRole}</strong> Â· Department:{" "}
+            Target role: <strong className="text-[#31574d]">{profile?.targetRole}</strong> · Department:{" "}
             {profile?.department}
           </p>
         </div>
@@ -522,7 +522,7 @@ function StudentWorkspace({ active }: { active: string }) {
                   <div>
                     <p className="text-sm font-semibold text-[#14221f]">{item.title}</p>
                     <p className="text-xs text-[#82918b]">
-                      {item.type} Â· Source: {item.source}
+                      {item.type} · Source: {item.source}
                     </p>
                   </div>
                 </div>
@@ -815,7 +815,7 @@ function StudentEvidenceView({ data, refetch }: { data: any; refetch: () => void
                         : "border border-[#cbdad3] bg-[#f0f4f2] text-[#61756c]"
                     }`}
                   >
-                    {sk} {isSelected ? "âœ“" : "+"}
+                    {sk} {isSelected ? "✓" : "+"}
                   </button>
                 );
               })}
@@ -843,15 +843,82 @@ function StudentEvidenceView({ data, refetch }: { data: any; refetch: () => void
 /* STUDENT ROADMAP VIEW                                                      */
 /* ========================================================================= */
 function StudentRoadmapView({ data, refetch }: { data: any; refetch: () => void }) {
-  const tasks = data?.recommendation?.recommendedActions ?? [];
+  const [freshRec, setFreshRec] = useState<{
+    recommendedRoles: string[];
+    primaryRoleFitScore: number;
+    skillGaps: string[];
+    improvementActions: { title: string; skill?: string; time?: string; reason?: string }[];
+    learningPriorities: string[];
+    readinessSummary: string;
+  } | null>(null);
+
+  const generateRecsMutation = trpc.ai.generateRecommendations.useMutation({
+    onSuccess: (result) => {
+      if (result.success && result.data) {
+        setFreshRec(result.data);
+        toast.success("Career recommendations generated.");
+        refetch();
+      } else {
+        toast.error(result.error || "AI service is not configured yet.");
+      }
+    },
+    onError: (err) => toast.error(err.message || "Failed to generate recommendations"),
+  });
+
+  const savedRec = data?.recommendations;
+  const tasks = freshRec?.improvementActions ?? savedRec?.recommendedActions ?? [];
+  const skillGaps = freshRec?.skillGaps ?? savedRec?.missingSkills ?? [];
+  const readinessSummary = freshRec?.readinessSummary ?? savedRec?.reasoning ?? null;
+  const primaryRoleFitScore = freshRec?.primaryRoleFitScore ?? savedRec?.matchScore ?? null;
+  const learningPriorities = freshRec?.learningPriorities ?? [];
+  const recommendedRoles = freshRec?.recommendedRoles ?? [];
 
   return (
     <div className="mx-auto max-w-7xl animate-in space-y-6">
-      <div className="eyebrow">Personalized Intervention Engine</div>
-      <h2 className="font-display text-3xl font-semibold tracking-tight">Your Career Roadmap</h2>
-      <p className="max-w-2xl text-sm leading-6 text-[#71817b]">
-        Targeted, evidence-generating actions prioritized by your target role requirements.
-      </p>
+      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
+        <div>
+          <div className="eyebrow">Personalized Intervention Engine</div>
+          <h2 className="font-display text-3xl font-semibold tracking-tight">Your Career Roadmap</h2>
+          <p className="mt-1.5 max-w-2xl text-sm leading-6 text-[#71817b]">
+            Targeted, evidence-generating actions prioritized by your target role requirements.
+          </p>
+        </div>
+        <Button
+          onClick={() => generateRecsMutation.mutate({})}
+          disabled={generateRecsMutation.isPending}
+          className="bg-[#135f52] font-semibold text-white hover:bg-[#0d5146]"
+        >
+          {generateRecsMutation.isPending ? (
+            <Loader2 className="mr-2 animate-spin" size={15} />
+          ) : (
+            <Sparkles className="mr-2" size={15} />
+          )}
+          {freshRec || savedRec ? "Refresh with AI" : "Generate Recommendations"}
+        </Button>
+      </div>
+
+      {readinessSummary && (
+        <div className="rounded-xl border border-[#dce7e1] bg-[#f6faf7] p-5">
+          <div className="flex items-center justify-between gap-4">
+            <div className="eyebrow">AI Readiness Summary</div>
+            {primaryRoleFitScore !== null && (
+              <span className="rounded-full bg-[#135f52] px-2.5 py-1 text-[11px] font-semibold text-white">
+                {primaryRoleFitScore}% role fit
+              </span>
+            )}
+          </div>
+          <p className="mt-2 text-sm leading-6 text-[#3c534a]">{readinessSummary}</p>
+          {recommendedRoles.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {recommendedRoles.map((role: string) => (
+                <span key={role} className="rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold text-[#187563] border border-[#cbdcd4]">
+                  {role}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-[1.15fr_.85fr]">
         <section className="rounded-xl border border-[#dce7e1] bg-white p-6 panel-shadow">
@@ -875,16 +942,45 @@ function StudentRoadmapView({ data, refetch }: { data: any; refetch: () => void 
                   <p className="mt-1.5 text-[11px] font-semibold text-[#a0823d]">Estimated effort: {task.time}</p>
                 </div>
               </div>
-            )) : <p className="py-5 text-sm text-[#71817b]">No data available yet.</p>}
+            )) : <p className="py-5 text-sm text-[#71817b]">No recommendations yet — click "Generate Recommendations" above.</p>}
           </div>
         </section>
 
-        <aside className="rounded-xl border border-[#dce7e1] bg-[#edf4ef] p-6">
-          <div className="eyebrow">Why This Matters</div>
-          <h3 className="mt-2 font-display text-xl font-semibold text-[#14221f]">Activity vs. Evidence</h3>
-          <p className="mt-3 text-sm leading-6 text-[#5e766b]">
-            A roadmap item creates real value when it produces an inspectable artifact that a reviewer or recruiter can verify. That is the Career OS difference.
-          </p>
+        <aside className="space-y-6">
+          <div className="rounded-xl border border-[#dce7e1] bg-[#edf4ef] p-6">
+            <div className="eyebrow">Why This Matters</div>
+            <h3 className="mt-2 font-display text-xl font-semibold text-[#14221f]">Activity vs. Evidence</h3>
+            <p className="mt-3 text-sm leading-6 text-[#5e766b]">
+              A roadmap item creates real value when it produces an inspectable artifact that a reviewer or recruiter can verify. That is the Career OS difference.
+            </p>
+          </div>
+
+          {skillGaps.length > 0 && (
+            <div className="rounded-xl border border-[#dce7e1] bg-white p-6 panel-shadow">
+              <div className="eyebrow">Skill Gaps</div>
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {skillGaps.map((skill: string) => (
+                  <span key={skill} className="rounded-full bg-[#fbeee0] px-2.5 py-1 text-[11px] font-semibold text-[#a0823d]">
+                    {skill}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {learningPriorities.length > 0 && (
+            <div className="rounded-xl border border-[#dce7e1] bg-white p-6 panel-shadow">
+              <div className="eyebrow">Learning Priorities</div>
+              <ul className="mt-3 space-y-1.5 text-sm text-[#3c534a]">
+                {learningPriorities.map((item: string) => (
+                  <li key={item} className="flex items-start gap-2">
+                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#187563]" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </aside>
       </div>
     </div>
@@ -935,7 +1031,7 @@ function StudentPassportView({ data, refetch }: { data: any; refetch: () => void
                 <p className="eyebrow text-[#b8d4c8]">Career OS Employability Passport</p>
                 <h3 className="mt-2 font-display text-2xl font-bold">{profile?.name}</h3>
                 <p className="mt-1 text-sm text-[#c3d6ce]">
-                  {profile?.targetRole} Â· Class of {profile?.graduationYear}
+                  {profile?.targetRole} · Class of {profile?.graduationYear}
                 </p>
               </div>
               <span className="grid h-12 w-12 place-items-center rounded-lg border border-white/20 bg-white/10">
@@ -1080,7 +1176,7 @@ function CollegeWorkspace({ active }: { active: string }) {
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-semibold text-[#14221f]">{item.title}</p>
                   <p className="mt-0.5 text-xs text-[#82918b]">
-                    Student: {item.studentName} ({item.studentEmail}) Â· {item.department} Â· Source: {item.source}
+                    Student: {item.studentName} ({item.studentEmail}) · {item.department} · Source: {item.source}
                   </p>
                   {item.sourceUrl && (
                     <a
@@ -1295,7 +1391,7 @@ function RecruiterWorkspace({ active }: { active: string }) {
   const [jobModalOpen, setJobModalOpen] = useState(false);
   const [jobTitle, setJobTitle] = useState("");
   const [jobDesc, setJobDesc] = useState("");
-  const [jobLocation, setJobLocation] = useState("Bengaluru Â· Hybrid");
+  const [jobLocation, setJobLocation] = useState("Bengaluru · Hybrid");
   const [jobSkills, setJobSkills] = useState("React, TypeScript, Node.js");
   const [minReadiness, setMinReadiness] = useState(65);
 
@@ -1429,7 +1525,7 @@ function RecruiterWorkspace({ active }: { active: string }) {
                 <Label className="text-xs">Location</Label>
                 <Input
                   required
-                  placeholder="e.g. Bengaluru Â· Hybrid"
+                  placeholder="e.g. Bengaluru · Hybrid"
                   value={jobLocation}
                   onChange={(e) => setJobLocation(e.target.value)}
                 />
@@ -1502,7 +1598,7 @@ function RecruiterWorkspace({ active }: { active: string }) {
                       <div className="min-w-0">
                         <p className="text-sm font-semibold text-[#14221f]">{candidate.name}</p>
                         <p className="text-xs text-[#82918b]">
-                          {candidate.role} Â· {candidate.institution}
+                          {candidate.role} · {candidate.institution}
                         </p>
                         <div className="mt-2 flex flex-wrap gap-1.5">
                           {candidate.skills.map((sk: string) => (

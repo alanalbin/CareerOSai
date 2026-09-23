@@ -42,7 +42,7 @@ export default function ProfileDataVerification() {
   const handleOpenReview = (field: string, val: string) => {
     setSelectedField(field);
     setCurrentValue(val);
-    setResolvedValue(val !== "â€”" ? val : "");
+    setResolvedValue(val !== "—" ? val : "");
     setResolutionReason("");
     setReviewOpen(true);
   };
@@ -304,7 +304,7 @@ export default function ProfileDataVerification() {
                             Review
                           </Button>
                         ) : (
-                          <span className="text-[11px] text-[#97a8a0]">â€”</span>
+                          <span className="text-[11px] text-[#97a8a0]">—</span>
                         )}
                       </td>
                     </tr>
@@ -396,7 +396,7 @@ export default function ProfileDataVerification() {
 
       {/* Footer */}
       <footer className="py-6 text-center text-xs text-[#81928b] border-t border-[#dfe8e2]/60 mt-12">
-        <p>Â© 2026 Career OS â€” AI-Powered Student Employability & Profile Platform</p>
+        <p>© 2026 Career OS — AI-Powered Student Employability & Profile Platform</p>
       </footer>
     </div>
   );

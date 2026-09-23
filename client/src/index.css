@@ -31,6 +31,21 @@ button, a, input, textarea, select { font: inherit; }
 button { cursor: pointer; }
 :focus-visible { outline: 3px solid rgba(126,183,168,.65); outline-offset: 3px; }
 
+/* Browser autofill (saved passwords/addresses) forces its own background via
+   -webkit-box-shadow, which the normal `background` property can't override.
+   Paint over it with the card color instead of letting Chrome/Safari force
+   their yellow/blue fill, and stop it flashing before this rule applies. */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-text-fill-color: var(--foreground);
+  -webkit-box-shadow: 0 0 0px 1000px var(--card) inset;
+  box-shadow: 0 0 0px 1000px var(--card) inset;
+  caret-color: var(--foreground);
+  transition: background-color 600000s ease-in-out 0s;
+}
+
 .font-display { font-family: 'Space Grotesk', sans-serif; }
 .text-balance { text-wrap: balance; }
 .eyebrow { letter-spacing: .14em; text-transform: uppercase; font-size: .7rem; font-weight: 700; color: #648178; }

@@ -106,9 +106,17 @@ temp/
 *.sqlite
 *.sqlite3
 
-# Webdev artifacts (checkpoint zips, migrations, etc.)
-.webdev/
+# Local embedded Postgres data (PGlite) - never commit real/dev data
+/data/
 
-# Manus version file (auto-generated, not part of source)
-client/public/__manus__/version.json
-.project-config.json
+# User-uploaded files - never commit real/dev uploads
+/uploads/*
+!/uploads/.gitkeep
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Tool configs
+.claude/

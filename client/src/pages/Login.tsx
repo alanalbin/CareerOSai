@@ -1,10 +1,11 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
+import { setPersistedUser } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { GraduationCap, Building2, Briefcase, ArrowRight, Loader2, Lock, Mail, ChevronLeft } from "lucide-react";
+import { GraduationCap, Building2, Briefcase, ArrowRight, Loader2, Lock, Mail, ChevronLeft, Github, Sparkles } from "lucide-react";
 import { Link, useLocation } from "wouter";
 
 interface LoginProps {
@@ -34,20 +35,28 @@ export default function Login({ initialRole = "student" }: LoginProps) {
 
   const loginMutation = trpc.auth.login.useMutation({
     onSuccess: async (data) => {
-      toast.success(`Welcome back, ${data.user.firstName}!`);
+      const user = data?.user;
+      if (user) {
+        setPersistedUser(user, data.token);
+        toast.success(`Welcome back, ${user.firstName || "User"}!`);
+      } else {
+        toast.success("Signed in successfully!");
+      }
+      
       // Update cache immediately to prevent unauthenticated flash
-      utils.auth.me.setData(undefined, { user: data.user as any, profile: null });
+      utils.auth.me.setData(undefined, { user: user as any, profile: null });
       await utils.auth.me.invalidate();
 
-      // Route directly to correct portal
-      if (data.user.role === "STUDENT") {
+      // Route directly to correct portal without falling back to homepage
+      const role = user?.role || (activeRole === "college" ? "COLLEGE_ADMIN" : activeRole === "recruiter" ? "RECRUITER" : "STUDENT");
+      if (role === "STUDENT") {
         window.location.href = "/student";
-      } else if (data.user.role === "COLLEGE_ADMIN") {
+      } else if (role === "COLLEGE_ADMIN") {
         window.location.href = "/college";
-      } else if (data.user.role === "RECRUITER") {
+      } else if (role === "RECRUITER") {
         window.location.href = "/recruiter";
       } else {
-        window.location.href = "/";
+        window.location.href = "/student";
       }
     },
     onError: (err) => {
@@ -180,6 +189,33 @@ export default function Login({ initialRole = "student" }: LoginProps) {
             </button>
           </div>
 
+          {/* GitHub Login Option for Students */}
+          {activeRole === "student" && (
+            <div className="mb-5">
+              <Link
+                href="/login/github"
+                className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#24292f] text-white hover:bg-[#15191d] py-3 px-4 text-xs font-semibold shadow-sm transition"
+              >
+                <Github size={16} />
+                <span>Continue with GitHub</span>
+                <span className="ml-auto flex items-center text-[10px] text-[#e4b85c] bg-white/10 px-2 py-0.5 rounded font-mono">
+                  <Sparkles size={11} className="mr-1" /> Analyze Repos
+                </span>
+              </Link>
+
+              <div className="relative my-4">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-[#dce7e1]" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-white px-2.5 text-[10px] font-semibold text-[#8e9f98]">
+                    Or sign in with email & password
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
@@ -191,6 +227,7 @@ export default function Login({ initialRole = "student" }: LoginProps) {
                 <Input
                   type="text"
                   required
+                  autoComplete="username"
                   placeholder={currentRoleConfig.placeholder}
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
@@ -208,7 +245,8 @@ export default function Login({ initialRole = "student" }: LoginProps) {
                 <Input
                   type="password"
                   required
-                  placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+                  autoComplete="current-password"
+                  placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="pl-9 text-xs border-[#cbdad3] focus-visible:ring-[#135f52]"
@@ -250,7 +288,7 @@ export default function Login({ initialRole = "student" }: LoginProps) {
 
       {/* Footer */}
       <footer className="py-6 text-center text-xs text-[#81928b]">
-        <p>Â© 2026 Career OS â€” AI-Powered Student Employability & Profile Platform</p>
+        <p>© 2026 Career OS — AI-Powered Student Employability & Profile Platform</p>
       </footer>
     </div>
   );

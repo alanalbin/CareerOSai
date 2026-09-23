@@ -1,4 +1,5 @@
-export { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
+export const COOKIE_NAME = "vantage_session";
+export const ONE_YEAR_MS = 31536000000;
 
 // Custom event to trigger authentication modal anywhere in the application
 export const startLogin = (mode: "login" | "register" = "login", role: string = "STUDENT") => {

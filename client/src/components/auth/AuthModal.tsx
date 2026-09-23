@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
+import { setPersistedUser } from "@/_core/hooks/useAuth";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Target, GraduationCap, Building2, Briefcase, ArrowRight, Loader2, Lock, Mail, User } from "lucide-react";
+import { Target, GraduationCap, Building2, Briefcase, ArrowRight, Loader2, Lock, Mail, User, Github } from "lucide-react";
 import { useLocation } from "wouter";
 
 interface AuthModalProps {
@@ -37,13 +38,21 @@ export default function AuthModal({
 
   const loginMutation = trpc.auth.login.useMutation({
     onSuccess: (data) => {
-      toast.success(`Welcome back, ${data.user.firstName}!`);
+      const user = data?.user;
+      if (user) {
+        setPersistedUser(user, data.token);
+        toast.success(`Welcome back, ${user.firstName || "User"}!`);
+      } else {
+        toast.success("Signed in successfully!");
+      }
       utils.auth.me.invalidate();
       onOpenChange(false);
       // Navigate to role workspace
-      if (data.user.role === "STUDENT") setLocation("/student");
-      else if (data.user.role === "COLLEGE_ADMIN") setLocation("/college");
-      else if (data.user.role === "RECRUITER") setLocation("/recruiter");
+      const userRole = user?.role || role;
+      if (userRole === "STUDENT") setLocation("/student");
+      else if (userRole === "COLLEGE_ADMIN") setLocation("/college");
+      else if (userRole === "RECRUITER") setLocation("/recruiter");
+      else setLocation("/student");
     },
     onError: (err) => {
       toast.error(err.message || "Failed to sign in");
@@ -52,12 +61,20 @@ export default function AuthModal({
 
   const registerMutation = trpc.auth.register.useMutation({
     onSuccess: (data) => {
-      toast.success(`Account created successfully! Welcome, ${data.user.firstName}.`);
+      const user = data?.user;
+      if (user) {
+        setPersistedUser(user, data.token);
+        toast.success(`Account created successfully! Welcome, ${user.firstName || "User"}.`);
+      } else {
+        toast.success("Account created successfully!");
+      }
       utils.auth.me.invalidate();
       onOpenChange(false);
-      if (data.user.role === "STUDENT") setLocation("/student");
-      else if (data.user.role === "COLLEGE_ADMIN") setLocation("/college");
-      else if (data.user.role === "RECRUITER") setLocation("/recruiter");
+      const userRole = user?.role || role;
+      if (userRole === "STUDENT") setLocation("/student");
+      else if (userRole === "COLLEGE_ADMIN") setLocation("/college");
+      else if (userRole === "RECRUITER") setLocation("/recruiter");
+      else setLocation("/student");
     },
     onError: (err) => {
       toast.error(err.message || "Registration failed");
@@ -185,6 +202,34 @@ export default function AuthModal({
           </div>
         )}
 
+        {/* GitHub Direct Login for Students */}
+        {role === "STUDENT" && mode !== "forgot" && (
+          <div className="pt-1">
+            <button
+              type="button"
+              onClick={() => {
+                onOpenChange(false);
+                setLocation("/login/github");
+              }}
+              className="w-full flex items-center justify-center gap-2 rounded-lg bg-[#24292f] text-white hover:bg-[#15191d] py-2 px-3 text-xs font-semibold shadow-sm transition"
+            >
+              <Github size={15} />
+              <span>Continue with GitHub (Analyze Repos)</span>
+            </button>
+
+            <div className="relative my-3">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-[#dce7e1]" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-[#fbfdfc] px-2 text-[10px] font-semibold text-[#8e9f98]">
+                  Or {mode === "login" ? "sign in" : "register"} with email
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Auth Form */}
         <form onSubmit={handleSubmit} className="space-y-3.5 pt-1">
           {mode === "register" && (
@@ -193,6 +238,7 @@ export default function AuthModal({
                 <Label className="text-xs text-[#526a60]">First Name</Label>
                 <Input
                   required
+                  autoComplete="given-name"
                   placeholder="Jane"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
@@ -203,6 +249,7 @@ export default function AuthModal({
                 <Label className="text-xs text-[#526a60]">Last Name</Label>
                 <Input
                   required
+                  autoComplete="family-name"
                   placeholder="Doe"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
@@ -217,6 +264,7 @@ export default function AuthModal({
               <div className="space-y-1">
                 <Label className="text-xs text-[#526a60]">Department</Label>
                 <Input
+                  autoComplete="off"
                   placeholder="Computer Science"
                   value={department}
                   onChange={(e) => setDepartment(e.target.value)}
@@ -226,6 +274,7 @@ export default function AuthModal({
               <div className="space-y-1">
                 <Label className="text-xs text-[#526a60]">Target Role</Label>
                 <Input
+                  autoComplete="off"
                   placeholder="Product Engineer"
                   value={targetRole}
                   onChange={(e) => setTargetRole(e.target.value)}
@@ -242,6 +291,7 @@ export default function AuthModal({
               </Label>
               <Input
                 required
+                autoComplete="organization"
                 placeholder={role === "COLLEGE_ADMIN" ? "Riverview Institute of Technology" : "Northstar Labs"}
                 value={orgName}
                 onChange={(e) => setOrgName(e.target.value)}
@@ -257,6 +307,7 @@ export default function AuthModal({
               <Input
                 required
                 type="email"
+                autoComplete={mode === "login" ? "username" : "email"}
                 placeholder="name@domain.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -284,6 +335,7 @@ export default function AuthModal({
                 <Input
                   required
                   type="password"
+                  autoComplete={mode === "login" ? "current-password" : "new-password"}
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}

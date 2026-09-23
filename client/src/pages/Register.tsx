@@ -1,10 +1,11 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
+import { setPersistedUser } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { GraduationCap, Building2, Briefcase, ArrowRight, Loader2, Lock, Mail, User, Phone, School, BookOpen, Calendar, Building, ChevronLeft } from "lucide-react";
+import { GraduationCap, Building2, Briefcase, ArrowRight, Loader2, Lock, Mail, User, Phone, School, BookOpen, Calendar, Building, ChevronLeft, Github, Sparkles } from "lucide-react";
 import { Link, useLocation } from "wouter";
 
 interface RegisterProps {
@@ -58,18 +59,26 @@ export default function Register({ initialRole = "student" }: RegisterProps) {
 
   const registerMutation = trpc.auth.register.useMutation({
     onSuccess: async (data) => {
-      toast.success(`Account created successfully! Welcome to Career OS, ${data.user.firstName}.`);
-      utils.auth.me.setData(undefined, { user: data.user as any, profile: null });
+      const user = data?.user;
+      if (user) {
+        setPersistedUser(user, data.token);
+        toast.success(`Account created successfully! Welcome to Career OS, ${user.firstName || "User"}.`);
+      } else {
+        toast.success("Account created successfully!");
+      }
+      
+      utils.auth.me.setData(undefined, { user: user as any, profile: null });
       await utils.auth.me.invalidate();
 
-      if (data.user.role === "STUDENT") {
+      const role = user?.role || (activeRole === "college" ? "COLLEGE_ADMIN" : activeRole === "recruiter" ? "RECRUITER" : "STUDENT");
+      if (role === "STUDENT") {
         window.location.href = "/student";
-      } else if (data.user.role === "COLLEGE_ADMIN") {
+      } else if (role === "COLLEGE_ADMIN") {
         window.location.href = "/college";
-      } else if (data.user.role === "RECRUITER") {
+      } else if (role === "RECRUITER") {
         window.location.href = "/recruiter";
       } else {
-        window.location.href = "/";
+        window.location.href = "/student";
       }
     },
     onError: (err) => {
@@ -231,6 +240,33 @@ export default function Register({ initialRole = "student" }: RegisterProps) {
             </button>
           </div>
 
+          {/* GitHub Register Option for Students */}
+          {activeRole === "student" && (
+            <div className="mb-5">
+              <Link
+                href="/login/github"
+                className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#24292f] text-white hover:bg-[#15191d] py-3 px-4 text-xs font-semibold shadow-sm transition"
+              >
+                <Github size={16} />
+                <span>Sign up with GitHub (One-Click)</span>
+                <span className="ml-auto flex items-center text-[10px] text-[#e4b85c] bg-white/10 px-2 py-0.5 rounded font-mono">
+                  <Sparkles size={11} className="mr-1" /> Import Repos
+                </span>
+              </Link>
+
+              <div className="relative my-4">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-[#dce7e1]" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-white px-2.5 text-[10px] font-semibold text-[#8e9f98]">
+                    Or register with email
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Registration Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* STUDENT ROLE FIELDS */}
@@ -243,6 +279,7 @@ export default function Register({ initialRole = "student" }: RegisterProps) {
                     <Input
                       type="text"
                       required
+                      autoComplete="name"
                       placeholder="e.g. Alan Albin"
                       value={studentFullName}
                       onChange={(e) => setStudentFullName(e.target.value)}
@@ -259,6 +296,7 @@ export default function Register({ initialRole = "student" }: RegisterProps) {
                       <Input
                         type="email"
                         required
+                        autoComplete="email"
                         placeholder="student@university.edu"
                         value={studentEmail}
                         onChange={(e) => setStudentEmail(e.target.value)}
@@ -272,6 +310,7 @@ export default function Register({ initialRole = "student" }: RegisterProps) {
                       <Phone className="absolute left-3 top-3 text-[#97a8a0]" size={15} />
                       <Input
                         type="tel"
+                        autoComplete="tel"
                         placeholder="+1 (555) 019-2834"
                         value={studentPhone}
                         onChange={(e) => setStudentPhone(e.target.value)}
@@ -289,6 +328,7 @@ export default function Register({ initialRole = "student" }: RegisterProps) {
                       <Input
                         type="text"
                         required
+                        autoComplete="organization"
                         placeholder="State University of Tech"
                         value={studentCollege}
                         onChange={(e) => setStudentCollege(e.target.value)}
@@ -302,6 +342,7 @@ export default function Register({ initialRole = "student" }: RegisterProps) {
                       <User className="absolute left-3 top-3 text-[#97a8a0]" size={15} />
                       <Input
                         type="text"
+                        autoComplete="off"
                         placeholder="STU10842"
                         value={studentId}
                         onChange={(e) => setStudentId(e.target.value)}
@@ -319,6 +360,7 @@ export default function Register({ initialRole = "student" }: RegisterProps) {
                       <Input
                         type="text"
                         required
+                        autoComplete="off"
                         placeholder="Computer Science Engineering"
                         value={studentCourse}
                         onChange={(e) => setStudentCourse(e.target.value)}
@@ -333,6 +375,7 @@ export default function Register({ initialRole = "student" }: RegisterProps) {
                       <Input
                         type="number"
                         required
+                        autoComplete="off"
                         min={2020}
                         max={2035}
                         value={graduationYear}
@@ -355,6 +398,7 @@ export default function Register({ initialRole = "student" }: RegisterProps) {
                     <Input
                       type="text"
                       required
+                      autoComplete="organization"
                       placeholder="e.g. Institute of Engineering & Technology"
                       value={collegeName}
                       onChange={(e) => setCollegeName(e.target.value)}
@@ -371,6 +415,7 @@ export default function Register({ initialRole = "student" }: RegisterProps) {
                       <Input
                         type="email"
                         required
+                        autoComplete="email"
                         placeholder="admin@college.edu"
                         value={collegeOfficialEmail}
                         onChange={(e) => setCollegeOfficialEmail(e.target.value)}
@@ -384,6 +429,7 @@ export default function Register({ initialRole = "student" }: RegisterProps) {
                       <School className="absolute left-3 top-3 text-[#97a8a0]" size={15} />
                       <Input
                         type="text"
+                        autoComplete="off"
                         placeholder="COL-8491"
                         value={collegeId}
                         onChange={(e) => setCollegeId(e.target.value)}
@@ -401,6 +447,7 @@ export default function Register({ initialRole = "student" }: RegisterProps) {
                       <Input
                         type="text"
                         required
+                        autoComplete="name"
                         placeholder="Dr. Placement Director"
                         value={contactPerson}
                         onChange={(e) => setContactPerson(e.target.value)}
@@ -414,6 +461,7 @@ export default function Register({ initialRole = "student" }: RegisterProps) {
                       <Phone className="absolute left-3 top-3 text-[#97a8a0]" size={15} />
                       <Input
                         type="tel"
+                        autoComplete="tel"
                         placeholder="+1 (555) 482-1920"
                         value={collegePhone}
                         onChange={(e) => setCollegePhone(e.target.value)}
@@ -436,6 +484,7 @@ export default function Register({ initialRole = "student" }: RegisterProps) {
                       <Input
                         type="text"
                         required
+                        autoComplete="name"
                         placeholder="Jane Doe"
                         value={recruiterName}
                         onChange={(e) => setRecruiterName(e.target.value)}
@@ -450,6 +499,7 @@ export default function Register({ initialRole = "student" }: RegisterProps) {
                       <Input
                         type="text"
                         required
+                        autoComplete="organization"
                         placeholder="Acme Technologies Inc."
                         value={recruiterCompany}
                         onChange={(e) => setRecruiterCompany(e.target.value)}
@@ -467,6 +517,7 @@ export default function Register({ initialRole = "student" }: RegisterProps) {
                       <Input
                         type="email"
                         required
+                        autoComplete="email"
                         placeholder="recruiter@company.com"
                         value={recruiterEmail}
                         onChange={(e) => setRecruiterEmail(e.target.value)}
@@ -480,6 +531,7 @@ export default function Register({ initialRole = "student" }: RegisterProps) {
                       <Phone className="absolute left-3 top-3 text-[#97a8a0]" size={15} />
                       <Input
                         type="tel"
+                        autoComplete="tel"
                         placeholder="+1 (555) 723-9012"
                         value={recruiterPhone}
                         onChange={(e) => setRecruiterPhone(e.target.value)}
@@ -496,6 +548,7 @@ export default function Register({ initialRole = "student" }: RegisterProps) {
                     <Input
                       type="text"
                       required
+                      autoComplete="organization-title"
                       placeholder="e.g. Senior Talent Acquisition Specialist"
                       value={designation}
                       onChange={(e) => setDesignation(e.target.value)}
@@ -515,7 +568,8 @@ export default function Register({ initialRole = "student" }: RegisterProps) {
                   <Input
                     type="password"
                     required
-                    placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+                    autoComplete="new-password"
+                    placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="pl-9 text-xs border-[#cbdad3] focus-visible:ring-[#135f52]"
@@ -529,7 +583,8 @@ export default function Register({ initialRole = "student" }: RegisterProps) {
                   <Input
                     type="password"
                     required
-                    placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+                    autoComplete="new-password"
+                    placeholder="••••••••"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     className="pl-9 text-xs border-[#cbdad3] focus-visible:ring-[#135f52]"
@@ -572,7 +627,7 @@ export default function Register({ initialRole = "student" }: RegisterProps) {
 
       {/* Footer */}
       <footer className="py-6 text-center text-xs text-[#81928b]">
-        <p>Â© 2026 Career OS â€” AI-Powered Student Employability & Profile Platform</p>
+        <p>© 2026 Career OS — AI-Powered Student Employability & Profile Platform</p>
       </footer>
     </div>
   );

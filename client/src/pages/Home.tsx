@@ -70,19 +70,21 @@ export default function Home() {
           <div className="hidden items-center gap-3 md:flex">
             {isAuthenticated && user ? (
               <div className="flex items-center gap-3">
-                <motion.a whileHover={{ rotateX: 2, rotateY: -2, scale: 1.02, z: 20 }} transition={{ type: "spring", stiffness: 300 }} as={Link}
-                  href={userWorkspaceLink}
-                  className="flex items-center gap-2 rounded-md bg-[#eaf2ee] px-3.5 py-2 text-xs font-semibold text-[#135f52] hover:bg-[#dce9e3]"
-                >
-                  <User size={14} />
-                  <span>{user.firstName} ({user.role.replace("_", " ")})</span>
-                </motion.a>
-                <motion.a whileHover={{ rotateX: 2, rotateY: -2, scale: 1.02, z: 20 }} transition={{ type: "spring", stiffness: 300 }} as={Link}
-                  href={userWorkspaceLink}
-                  className="rounded-md bg-[#135f52] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0d5146]"
-                >
-                  Go to Workspace <ArrowRight className="ml-1 inline" size={15} />
-                </motion.a>
+                <Link href={userWorkspaceLink} asChild>
+                  <motion.a whileHover={{ rotateX: 2, rotateY: -2, scale: 1.02, z: 20 }} transition={{ type: "spring", stiffness: 300 }}
+                    className="flex items-center gap-2 rounded-md bg-[#eaf2ee] px-3.5 py-2 text-xs font-semibold text-[#135f52] hover:bg-[#dce9e3]"
+                  >
+                    <User size={14} />
+                    <span>{user.firstName} ({user.role.replace("_", " ")})</span>
+                  </motion.a>
+                </Link>
+                <Link href={userWorkspaceLink} asChild>
+                  <motion.a whileHover={{ rotateX: 2, rotateY: -2, scale: 1.02, z: 20 }} transition={{ type: "spring", stiffness: 300 }}
+                    className="rounded-md bg-[#135f52] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0d5146]"
+                  >
+                    Go to Workspace <ArrowRight className="ml-1 inline" size={15} />
+                  </motion.a>
+                </Link>
               </div>
             ) : (
               <>
@@ -97,6 +99,18 @@ export default function Home() {
                     <div className="px-2 py-1.5 text-[11px] font-bold uppercase tracking-wider text-[#73837c]">
                       Choose your portal
                     </div>
+                    <DropdownMenuItem
+                      onClick={() => setLocation("/login/github")}
+                      className="cursor-pointer gap-2.5 py-2 text-xs font-medium hover:bg-[#f0f6f3] border-b border-[#eef4f1] mb-1"
+                    >
+                      <Github size={16} className="text-[#24292f]" />
+                      <div>
+                        <p className="font-semibold text-[#14221f] flex items-center gap-1.5">
+                          GitHub Login <span className="text-[9px] bg-[#e4b85c] text-[#30220c] font-bold px-1.5 py-0.2 rounded">Analyze Data</span>
+                        </p>
+                        <p className="text-[11px] text-[#73837c]">Codebase & repo audit</p>
+                      </div>
+                    </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={() => setLocation("/login/student")}
                       className="cursor-pointer gap-2.5 py-2 text-xs font-medium hover:bg-[#f0f6f3]"
@@ -189,38 +203,49 @@ export default function Home() {
               <div className="my-2 border-t border-[#edf2ef] pt-2">
                 <p className="text-[11px] font-bold uppercase tracking-wider text-[#73837c]">Access Portals</p>
                 <div className="mt-2 space-y-1">
-                  <motion.a whileHover={{ rotateX: 2, rotateY: -2, scale: 1.02, z: 20 }} transition={{ type: "spring", stiffness: 300 }} as={Link}
-                    href="/login/student"
-                    onClick={() => setMenuOpen(false)}
-                    className="flex items-center gap-2 py-1.5 font-semibold text-[#135f52]"
-                  >
-                    <GraduationCap size={16} /> Student Login
-                  </motion.a>
-                  <motion.a whileHover={{ rotateX: 2, rotateY: -2, scale: 1.02, z: 20 }} transition={{ type: "spring", stiffness: 300 }} as={Link}
-                    href="/login/college"
-                    onClick={() => setMenuOpen(false)}
-                    className="flex items-center gap-2 py-1.5 font-semibold text-[#135f52]"
-                  >
-                    <Building2 size={16} /> College Login
-                  </motion.a>
-                  <motion.a whileHover={{ rotateX: 2, rotateY: -2, scale: 1.02, z: 20 }} transition={{ type: "spring", stiffness: 300 }} as={Link}
-                    href="/login/recruiter"
-                    onClick={() => setMenuOpen(false)}
-                    className="flex items-center gap-2 py-1.5 font-semibold text-[#135f52]"
-                  >
-                    <Briefcase size={16} /> Recruiter Login
-                  </motion.a>
+                  <Link href="/login/github" onClick={() => setMenuOpen(false)} asChild>
+                    <motion.a whileHover={{ rotateX: 2, rotateY: -2, scale: 1.02, z: 20 }} transition={{ type: "spring", stiffness: 300 }}
+                      className="flex items-center gap-2 py-1.5 font-semibold text-[#14221f]"
+                    >
+                      <Github size={16} /> GitHub Login (Analyze Data)
+                    </motion.a>
+                  </Link>
+                  <Link href="/login/student" onClick={() => setMenuOpen(false)} asChild>
+                    <motion.a whileHover={{ rotateX: 2, rotateY: -2, scale: 1.02, z: 20 }} transition={{ type: "spring", stiffness: 300 }}
+                      className="flex items-center gap-2 py-1.5 font-semibold text-[#135f52]"
+                    >
+                      <GraduationCap size={16} /> Student Login
+                    </motion.a>
+                  </Link>
+                  <Link href="/login/college" onClick={() => setMenuOpen(false)} asChild>
+                    <motion.a whileHover={{ rotateX: 2, rotateY: -2, scale: 1.02, z: 20 }} transition={{ type: "spring", stiffness: 300 }}
+                      className="flex items-center gap-2 py-1.5 font-semibold text-[#135f52]"
+                    >
+                      <Building2 size={16} /> College Login
+                    </motion.a>
+                  </Link>
+                  <Link href="/login/recruiter" onClick={() => setMenuOpen(false)} asChild>
+                    <motion.a whileHover={{ rotateX: 2, rotateY: -2, scale: 1.02, z: 20 }} transition={{ type: "spring", stiffness: 300 }}
+                      className="flex items-center gap-2 py-1.5 font-semibold text-[#135f52]"
+                    >
+                      <Briefcase size={16} /> Recruiter Login
+                    </motion.a>
+                  </Link>
                 </div>
               </div>
 
               {isAuthenticated ? (
-                <motion.a whileHover={{ rotateX: 2, rotateY: -2, scale: 1.02, z: 20 }} transition={{ type: "spring", stiffness: 300 }} as={Link} href={userWorkspaceLink} onClick={() => setMenuOpen(false)} className="rounded-md bg-[#135f52] p-2.5 text-center font-semibold text-white">
-                  Go to Workspace
-                </motion.a>
+                <Link href={userWorkspaceLink} onClick={() => setMenuOpen(false)} asChild>
+                  <motion.a whileHover={{ rotateX: 2, rotateY: -2, scale: 1.02, z: 20 }} transition={{ type: "spring", stiffness: 300 }} className="rounded-md bg-[#135f52] p-2.5 text-center font-semibold text-white">
+                    Go to Workspace
+                  </motion.a>
+                </Link>
               ) : (
-                <motion.a whileHover={{ rotateX: 2, rotateY: -2, scale: 1.02, z: 20 }} transition={{ type: "spring", stiffness: 300 }} as={Link} href="/register/student" onClick={() => setMenuOpen(false)} className="rounded-md bg-[#135f52] p-2.5 text-center font-semibold text-white">
-                  Get Started (Student)
-                </motion.a>
+                <Link href="/register/student" onClick={() => setMenuOpen(false)} asChild>
+                  <motion.a whileHover={{ rotateX: 2, rotateY: -2, scale: 1.02, z: 20 }} transition={{ type: "spring", stiffness: 300 }} className="rounded-md bg-[#135f52] p-2.5 text-center font-semibold text-white">
+                    Get Started (Student)
+                  </motion.a>
+                </Link>
               )}
             </div>
           </div>
@@ -244,19 +269,21 @@ export default function Home() {
               </p>
               <div className="mt-9 flex flex-wrap items-center gap-3">
                 {isAuthenticated ? (
-                  <motion.a whileHover={{ rotateX: 2, rotateY: -2, scale: 1.02, z: 20 }} transition={{ type: "spring", stiffness: 300 }} as={Link}
-                    href={userWorkspaceLink}
-                    className="rounded-md bg-[#135f52] px-5 py-3.5 text-sm font-semibold text-white shadow-lg shadow-[#135f52]/15 transition hover:-translate-y-0.5 hover:bg-[#0d5146]"
-                  >
-                    Open my workspace <ArrowRight className="ml-2 inline" size={16} />
-                  </motion.a>
+                  <Link href={userWorkspaceLink} asChild>
+                    <motion.a whileHover={{ rotateX: 2, rotateY: -2, scale: 1.02, z: 20 }} transition={{ type: "spring", stiffness: 300 }}
+                      className="rounded-md bg-[#135f52] px-5 py-3.5 text-sm font-semibold text-white shadow-lg shadow-[#135f52]/15 transition hover:-translate-y-0.5 hover:bg-[#0d5146]"
+                    >
+                      Open my workspace <ArrowRight className="ml-2 inline" size={16} />
+                    </motion.a>
+                  </Link>
                 ) : (
-                  <motion.a whileHover={{ rotateX: 2, rotateY: -2, scale: 1.02, z: 20 }} transition={{ type: "spring", stiffness: 300 }} as={Link}
-                    href="/register/student"
-                    className="rounded-md bg-[#135f52] px-5 py-3.5 text-sm font-semibold text-white shadow-lg shadow-[#135f52]/15 transition hover:-translate-y-0.5 hover:bg-[#0d5146]"
-                  >
-                    Check my readiness <ArrowRight className="ml-2 inline" size={16} />
-                  </motion.a>
+                  <Link href="/register/student" asChild>
+                    <motion.a whileHover={{ rotateX: 2, rotateY: -2, scale: 1.02, z: 20 }} transition={{ type: "spring", stiffness: 300 }}
+                      className="rounded-md bg-[#135f52] px-5 py-3.5 text-sm font-semibold text-white shadow-lg shadow-[#135f52]/15 transition hover:-translate-y-0.5 hover:bg-[#0d5146]"
+                    >
+                      Check my readiness <ArrowRight className="ml-2 inline" size={16} />
+                    </motion.a>
+                  </Link>
                 )}
                 <a
                   href="#how-it-works"
@@ -321,20 +348,20 @@ export default function Home() {
             </div>
             <div className="mt-10 grid gap-4 md:grid-cols-3" style={{ perspective: "1000px" }}>
               {roles.map(({ title, copy, href, icon: Icon }) => (
-                <motion.a whileHover={{ rotateX: 2, rotateY: -2, scale: 1.02, z: 20 }} transition={{ type: "spring", stiffness: 300 }} as={Link}
-                  key={href}
-                  href={href}
-                  className="group rounded-xl border border-[#d5e2da] bg-white p-6 transition-all hover:-translate-y-1 hover:border-[#a8c6b9] hover:shadow-xl relative"
-                >
-                  <div className="flex items-start justify-between">
-                    <span className="grid h-10 w-10 place-items-center rounded-lg bg-[#e6f1ec] text-[#135f52]">
-                      <Icon size={19} />
-                    </span>
-                    <ArrowRight size={18} className="text-[#9aaba3] transition group-hover:translate-x-1 group-hover:text-[#135f52]" />
-                  </div>
-                  <h3 className="mt-12 font-display text-lg font-semibold">{title}</h3>
-                  <p className="mt-2 text-sm leading-6 text-[#6f8079]">{copy}</p>
-                </motion.a>
+                <Link key={href} href={href} asChild>
+                  <motion.a whileHover={{ rotateX: 2, rotateY: -2, scale: 1.02, z: 20 }} transition={{ type: "spring", stiffness: 300 }}
+                    className="group rounded-xl border border-[#d5e2da] bg-white p-6 transition-all hover:-translate-y-1 hover:border-[#a8c6b9] hover:shadow-xl relative"
+                  >
+                    <div className="flex items-start justify-between">
+                      <span className="grid h-10 w-10 place-items-center rounded-lg bg-[#e6f1ec] text-[#135f52]">
+                        <Icon size={19} />
+                      </span>
+                      <ArrowRight size={18} className="text-[#9aaba3] transition group-hover:translate-x-1 group-hover:text-[#135f52]" />
+                    </div>
+                    <h3 className="mt-12 font-display text-lg font-semibold">{title}</h3>
+                    <p className="mt-2 text-sm leading-6 text-[#6f8079]">{copy}</p>
+                  </motion.a>
+                </Link>
               ))}
             </div>
           </div>

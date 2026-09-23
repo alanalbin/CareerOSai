@@ -12,12 +12,15 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 import ProfileDataVerification from "@/pages/ProfileDataVerification";
+import GitHubLogin from "@/pages/GitHubLogin";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/login" component={() => <Login />} />
+      <Route path="/login/github" component={GitHubLogin} />
+      <Route path="/auth/github" component={GitHubLogin} />
       <Route path="/login/student" component={() => <Login initialRole="student" />} />
       <Route path="/login/college" component={() => <Login initialRole="college" />} />
       <Route path="/login/recruiter" component={() => <Login initialRole="recruiter" />} />
