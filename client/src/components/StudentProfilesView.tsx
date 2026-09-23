@@ -100,6 +100,8 @@ export default function StudentProfilesView() {
   // LinkedIn Modal
   const [liModalOpen, setLiModalOpen] = useState(false);
   const [liUrl, setLiUrl] = useState("");
+  const [liHeadline, setLiHeadline] = useState("");
+  const [liSkills, setLiSkills] = useState("");
 
   const connectGithubMutation = trpc.student.connectGithub.useMutation({
     onSuccess: (data) => {
@@ -130,6 +132,8 @@ export default function StudentProfilesView() {
       toast.success(data.message);
       setLiModalOpen(false);
       setLiUrl("");
+      setLiHeadline("");
+      setLiSkills("");
       utils.student.getProfessionalProfiles.invalidate();
       utils.student.getDashboardData.invalidate();
       utils.verification.getMatrix.invalidate();
@@ -162,7 +166,11 @@ export default function StudentProfilesView() {
   const handleConnectLinkedin = (e: React.FormEvent) => {
     e.preventDefault();
     if (!liUrl.trim()) return;
-    connectLinkedinMutation.mutate({ profileUrl: liUrl.trim() });
+    connectLinkedinMutation.mutate({
+      profileUrl: liUrl.trim(),
+      headline: liHeadline.trim() || undefined,
+      skills: liSkills.trim() ? liSkills.split(",").map(s => s.trim()).filter(Boolean) : undefined,
+    } as any);
   };
 
   if (profilesQuery.isLoading) {
@@ -421,6 +429,20 @@ export default function StudentProfilesView() {
                   <p className="text-[11px] text-[#71817b] mt-1">
                     Connected: {new Date(linkedin.connectedAt).toLocaleDateString()}
                   </p>
+                  {linkedin.data?.headline && (
+                    <div className="mt-2 pt-2 border-t border-[#e2ece7]">
+                      <p className="text-xs text-[#243530] font-medium">{linkedin.data.headline}</p>
+                    </div>
+                  )}
+                  {linkedin.data?.skills && linkedin.data.skills.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {linkedin.data.skills.map((skill: string, idx: number) => (
+                        <span key={idx} className="bg-[#eef4f1] text-[#0a66c2] text-[10px] font-semibold px-2 py-0.5 rounded">
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <div className="rounded-lg border border-[#e7eeea] p-4 bg-white text-xs space-y-2">
@@ -549,18 +571,33 @@ export default function StudentProfilesView() {
           <DialogHeader>
             <DialogTitle>Connect LinkedIn Profile</DialogTitle>
             <DialogDescription>
-              Enter your public LinkedIn profile URL. We will link this profile to your Career OS identity for recruiter verification.
+              Enter your public LinkedIn profile URL or vanity username. We will link this profile to your Career OS identity for recruiter verification.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleConnectLinkedin} className="space-y-4 pt-2">
             <div className="space-y-1.5">
-              <Label className="text-xs">LinkedIn Profile URL</Label>
+              <Label className="text-xs">LinkedIn Profile URL or Vanity Handle</Label>
               <Input
                 required
-                type="url"
-                placeholder="https://linkedin.com/in/your-profile"
+                placeholder="https://linkedin.com/in/your-handle or your-handle"
                 value={liUrl}
                 onChange={(e) => setLiUrl(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Professional Headline (Optional)</Label>
+              <Input
+                placeholder="e.g. Full-Stack Developer | CS Scholar"
+                value={liHeadline}
+                onChange={(e) => setLiHeadline(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Demonstrated Skills (Optional, comma separated)</Label>
+              <Input
+                placeholder="e.g. TypeScript, React, Python, Cloud Architecture"
+                value={liSkills}
+                onChange={(e) => setLiSkills(e.target.value)}
               />
             </div>
             <Button

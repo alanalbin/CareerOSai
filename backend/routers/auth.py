@@ -99,68 +99,6 @@ def login_with_github(payload: GitHubAuthRequest):
     if payload.token and payload.token.strip():
         headers["Authorization"] = f"Bearer {payload.token.strip()}"
 
-    # Demo handles fallback
-    if username in ["alexvance-dev", "demo", "sample-student", "developer"]:
-        user_obj = {
-            "id": 1,
-            "email": f"{username}@university.edu",
-            "firstName": "Alex",
-            "lastName": "Vance",
-            "role": "STUDENT",
-            "avatarUrl": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-            "githubUsername": username,
-        }
-        current_session["user"] = user_obj
-        github_profile = {
-            "id": 1,
-            "username": username,
-            "profileUrl": f"https://github.com/{username}",
-            "verified": True,
-            "connectedAt": "2026-09-23T11:00:00Z",
-            "data": {
-                "name": "Alex Vance",
-                "bio": "Full-stack developer & CS Student building open source distributed tools.",
-                "avatar_url": user_obj["avatarUrl"],
-                "public_repos": 14,
-                "followers": 48,
-                "following": 22,
-                "topLanguages": ["TypeScript", "Python", "Rust", "Go"],
-                "repos": [
-                    {
-                        "name": "distributed-task-queue",
-                        "description": "High-throughput asynchronous task worker in Python & Redis.",
-                        "language": "Python",
-                        "stargazers_count": 86,
-                        "forks_count": 14,
-                        "html_url": f"https://github.com/{username}/distributed-task-queue",
-                    },
-                    {
-                        "name": "react-flow-visualizer",
-                        "description": "Interactive DAG workflow builder built with React and TailwindCSS.",
-                        "language": "TypeScript",
-                        "stargazers_count": 42,
-                        "forks_count": 8,
-                        "html_url": f"https://github.com/{username}/react-flow-visualizer",
-                    },
-                    {
-                        "name": "rust-log-indexer",
-                        "description": "Blazing fast text log indexing tool utilizing SIMD operations.",
-                        "language": "Rust",
-                        "stargazers_count": 31,
-                        "forks_count": 3,
-                        "html_url": f"https://github.com/{username}/rust-log-indexer",
-                    }
-                ],
-            }
-        }
-        current_session["github_profile"] = github_profile
-        return {
-            "token": "careeros_jwt_token_sample",
-            "user": user_obj,
-            "github": github_profile,
-            "message": f"Successfully authenticated as @{username} via GitHub!"
-        }
-
     try:
         gh_res = requests.get(f"https://api.github.com/users/{username}", headers=headers, timeout=10)
         if gh_res.status_code == 404:

@@ -52,12 +52,13 @@ export default function GitHubLogin() {
       }, 50);
     },
     onError: () => {
-      const cleanUsername = username.trim().replace(/^https?:\/\/github\.com\//, "").replace(/\/$/, "") || "alexvance-dev";
+      const cleanUsername = username.trim().replace(/^https?:\/\/github\.com\//, "").replace(/\/$/, "");
+      if (!cleanUsername) return;
       const demoUser = {
         id: 1,
         email: `${cleanUsername}@users.noreply.github.com`,
-        firstName: cleanUsername === "alexvance-dev" ? "Alex" : cleanUsername,
-        lastName: cleanUsername === "alexvance-dev" ? "Vance" : "Dev",
+        firstName: cleanUsername,
+        lastName: "",
         role: "STUDENT",
         githubUsername: cleanUsername,
       };
@@ -72,14 +73,18 @@ export default function GitHubLogin() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const cleanUsername = username.trim().replace(/^https?:\/\/github\.com\//, "").replace(/\/$/, "") || "alexvance-dev";
+    const cleanUsername = username.trim().replace(/^https?:\/\/github\.com\//, "").replace(/\/$/, "");
+    if (!cleanUsername) {
+      toast.error("Please enter a GitHub username.");
+      return;
+    }
     
     // Immediate persistence
     const immediateUser = {
       id: 1,
       email: `${cleanUsername}@users.noreply.github.com`,
-      firstName: cleanUsername === "alexvance-dev" ? "Alex" : cleanUsername,
-      lastName: cleanUsername === "alexvance-dev" ? "Vance" : "Dev",
+      firstName: cleanUsername,
+      lastName: "",
       role: "STUDENT",
       githubUsername: cleanUsername,
     };
@@ -96,17 +101,13 @@ export default function GitHubLogin() {
     const demoUser = {
       id: 1,
       email: `${demoHandle}@users.noreply.github.com`,
-      firstName: demoHandle === "alexvance-dev" ? "Alex" : demoHandle,
-      lastName: demoHandle === "alexvance-dev" ? "Vance" : "Dev",
+      firstName: demoHandle,
+      lastName: "",
       role: "STUDENT",
       githubUsername: demoHandle,
     };
     setPersistedUser(demoUser, "careeros_jwt_token_sample");
-    toast.success(`Quick demo access as @${demoHandle}!`);
-    setLocation("/student");
-    setTimeout(() => {
-      window.location.href = "/student";
-    }, 50);
+    githubAuthMutation.mutate({ username: demoHandle });
   };
 
   return (
@@ -194,10 +195,10 @@ export default function GitHubLogin() {
               <div className="flex flex-wrap gap-2">
                 <button
                   type="button"
-                  onClick={() => handleQuickDemo("alexvance-dev")}
+                  onClick={() => handleQuickDemo("alanalbin")}
                   className="text-xs bg-white border border-[#cbdad3] text-[#135f52] font-semibold px-2.5 py-1 rounded-md hover:bg-[#eaf4f0] transition"
                 >
-                  @alexvance-dev
+                  @alanalbin
                 </button>
                 <button
                   type="button"

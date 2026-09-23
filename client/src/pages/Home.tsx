@@ -31,9 +31,33 @@ import { motion } from "framer-motion";
 import { Link, useLocation } from "wouter";
 
 const roles = [
-  { title: "Student portal", copy: "Turn your work into a clear, evidence-backed career story.", href: "/student", icon: GraduationCap },
-  { title: "College intelligence", copy: "See readiness across departments and act before placement season.", href: "/college", icon: BarChart3 },
-  { title: "Recruiter workspace", copy: "Find relevant, consented talent by demonstrated capability.", href: "/recruiter", icon: UsersRound },
+  {
+    title: "Student portal",
+    copy: "Turn your work into a clear, evidence-backed career story.",
+    href: "/student",
+    loginHref: "/login/student",
+    regHref: "/register/student",
+    loginLabel: "Sign In as Student",
+    icon: GraduationCap,
+  },
+  {
+    title: "College intelligence",
+    copy: "See readiness across departments and act before placement season.",
+    href: "/college",
+    loginHref: "/login/college",
+    regHref: "/register/college",
+    loginLabel: "Sign In as College Admin",
+    icon: BarChart3,
+  },
+  {
+    title: "Recruiter workspace",
+    copy: "Find relevant, consented talent by demonstrated capability.",
+    href: "/recruiter",
+    loginHref: "/login/recruiter",
+    regHref: "/register/recruiter",
+    loginLabel: "Sign In as Recruiter",
+    icon: UsersRound,
+  },
 ];
 
 export default function Home() {
@@ -67,12 +91,90 @@ export default function Home() {
             <a href="#for-teams" className="transition-colors hover:text-[#135f52]">For teams</a>
             <a href="#passport" className="transition-colors hover:text-[#135f52]">Employability Passport</a>
           </nav>
-          <div className="hidden items-center gap-3 md:flex">
+          <div className="hidden items-center gap-2 md:flex">
+            {/* Direct visible portal login links */}
+            <div className="flex items-center gap-1 bg-white/70 p-1 rounded-lg border border-[#dce7e1]">
+              <Link
+                href="/login/student"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-semibold text-[#135f52] hover:bg-[#eaf4f0] transition"
+              >
+                <GraduationCap size={14} /> Student Login
+              </Link>
+              <Link
+                href="/login/college"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-semibold text-[#135f52] hover:bg-[#eaf4f0] transition"
+              >
+                <Building2 size={14} /> College Login
+              </Link>
+              <Link
+                href="/login/recruiter"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-semibold text-[#135f52] hover:bg-[#eaf4f0] transition"
+              >
+                <Briefcase size={14} /> Recruiter Login
+              </Link>
+            </div>
+
+            {/* Always visible Login & Portals Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold text-[#135f52] transition hover:bg-[#e7f0ec] border border-[#dce7e1] bg-white shadow-xs">
+                <LogIn size={14} />
+                <span>All Portals</span>
+                <ChevronDown size={13} className="opacity-70" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-60 bg-white p-1.5 shadow-xl border border-[#dce7e1]">
+                <div className="px-2 py-1.5 text-[11px] font-bold uppercase tracking-wider text-[#73837c]">
+                  Choose your login portal
+                </div>
+                <DropdownMenuItem
+                  onClick={() => setLocation("/login/student")}
+                  className="cursor-pointer gap-2.5 py-2 text-xs font-medium hover:bg-[#f0f6f3]"
+                >
+                  <GraduationCap size={16} className="text-[#135f52]" />
+                  <div>
+                    <p className="font-semibold text-[#14221f]">Student Login</p>
+                    <p className="text-[11px] text-[#73837c]">Access student workspace</p>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setLocation("/login/college")}
+                  className="cursor-pointer gap-2.5 py-2 text-xs font-medium hover:bg-[#f0f6f3]"
+                >
+                  <Building2 size={16} className="text-[#135f52]" />
+                  <div>
+                    <p className="font-semibold text-[#14221f]">College Login</p>
+                    <p className="text-[11px] text-[#73837c]">Institution administration</p>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setLocation("/login/recruiter")}
+                  className="cursor-pointer gap-2.5 py-2 text-xs font-medium hover:bg-[#f0f6f3]"
+                >
+                  <Briefcase size={16} className="text-[#135f52]" />
+                  <div>
+                    <p className="font-semibold text-[#14221f]">Recruiter Login</p>
+                    <p className="text-[11px] text-[#73837c]">Talent search & hiring</p>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setLocation("/login/github")}
+                  className="cursor-pointer gap-2.5 py-2 text-xs font-medium hover:bg-[#f0f6f3] border-t border-[#eef4f1] mt-1 pt-2"
+                >
+                  <Github size={16} className="text-[#24292f]" />
+                  <div>
+                    <p className="font-semibold text-[#14221f] flex items-center gap-1.5">
+                      GitHub Login <span className="text-[9px] bg-[#e4b85c] text-[#30220c] font-bold px-1.5 py-0.2 rounded">Analyze Data</span>
+                    </p>
+                    <p className="text-[11px] text-[#73837c]">Codebase & repo audit</p>
+                  </div>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
             {isAuthenticated && user ? (
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
                 <Link href={userWorkspaceLink} asChild>
                   <motion.a whileHover={{ rotateX: 2, rotateY: -2, scale: 1.02, z: 20 }} transition={{ type: "spring", stiffness: 300 }}
-                    className="flex items-center gap-2 rounded-md bg-[#eaf2ee] px-3.5 py-2 text-xs font-semibold text-[#135f52] hover:bg-[#dce9e3]"
+                    className="flex items-center gap-2 rounded-md bg-[#eaf2ee] px-3 py-2 text-xs font-semibold text-[#135f52] hover:bg-[#dce9e3]"
                   >
                     <User size={14} />
                     <span>{user.firstName} ({user.role.replace("_", " ")})</span>
@@ -80,113 +182,54 @@ export default function Home() {
                 </Link>
                 <Link href={userWorkspaceLink} asChild>
                   <motion.a whileHover={{ rotateX: 2, rotateY: -2, scale: 1.02, z: 20 }} transition={{ type: "spring", stiffness: 300 }}
-                    className="rounded-md bg-[#135f52] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0d5146]"
+                    className="rounded-md bg-[#135f52] px-3.5 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-[#0d5146]"
                   >
-                    Go to Workspace <ArrowRight className="ml-1 inline" size={15} />
+                    Go to Workspace <ArrowRight className="ml-1 inline" size={13} />
                   </motion.a>
                 </Link>
               </div>
             ) : (
-              <>
-                {/* Clear Login Dropdown Option */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger className="flex items-center gap-1.5 rounded-md px-3.5 py-2 text-sm font-semibold text-[#135f52] transition hover:bg-[#e7f0ec]">
-                    <LogIn size={15} />
-                    <span>Login</span>
-                    <ChevronDown size={14} className="opacity-70" />
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56 bg-white p-1.5 shadow-xl border border-[#dce7e1]">
-                    <div className="px-2 py-1.5 text-[11px] font-bold uppercase tracking-wider text-[#73837c]">
-                      Choose your portal
+              <DropdownMenu>
+                <DropdownMenuTrigger className="flex items-center gap-1.5 rounded-md bg-[#135f52] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0d5146]">
+                  <span>Get started</span>
+                  <ChevronDown size={14} className="opacity-80" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56 bg-white p-1.5 shadow-xl border border-[#dce7e1]">
+                  <div className="px-2 py-1.5 text-[11px] font-bold uppercase tracking-wider text-[#73837c]">
+                    Create new account
+                  </div>
+                  <DropdownMenuItem
+                    onClick={() => setLocation("/register/student")}
+                    className="cursor-pointer gap-2.5 py-2 text-xs font-medium hover:bg-[#f0f6f3]"
+                  >
+                    <GraduationCap size={16} className="text-[#135f52]" />
+                    <div>
+                      <p className="font-semibold text-[#14221f]">Student Account</p>
+                      <p className="text-[11px] text-[#73837c]">Track career readiness</p>
                     </div>
-                    <DropdownMenuItem
-                      onClick={() => setLocation("/login/github")}
-                      className="cursor-pointer gap-2.5 py-2 text-xs font-medium hover:bg-[#f0f6f3] border-b border-[#eef4f1] mb-1"
-                    >
-                      <Github size={16} className="text-[#24292f]" />
-                      <div>
-                        <p className="font-semibold text-[#14221f] flex items-center gap-1.5">
-                          GitHub Login <span className="text-[9px] bg-[#e4b85c] text-[#30220c] font-bold px-1.5 py-0.2 rounded">Analyze Data</span>
-                        </p>
-                        <p className="text-[11px] text-[#73837c]">Codebase & repo audit</p>
-                      </div>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => setLocation("/login/student")}
-                      className="cursor-pointer gap-2.5 py-2 text-xs font-medium hover:bg-[#f0f6f3]"
-                    >
-                      <GraduationCap size={16} className="text-[#135f52]" />
-                      <div>
-                        <p className="font-semibold text-[#14221f]">Student Login</p>
-                        <p className="text-[11px] text-[#73837c]">Access student workspace</p>
-                      </div>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => setLocation("/login/college")}
-                      className="cursor-pointer gap-2.5 py-2 text-xs font-medium hover:bg-[#f0f6f3]"
-                    >
-                      <Building2 size={16} className="text-[#135f52]" />
-                      <div>
-                        <p className="font-semibold text-[#14221f]">College Login</p>
-                        <p className="text-[11px] text-[#73837c]">Institution administration</p>
-                      </div>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => setLocation("/login/recruiter")}
-                      className="cursor-pointer gap-2.5 py-2 text-xs font-medium hover:bg-[#f0f6f3]"
-                    >
-                      <Briefcase size={16} className="text-[#135f52]" />
-                      <div>
-                        <p className="font-semibold text-[#14221f]">Recruiter Login</p>
-                        <p className="text-[11px] text-[#73837c]">Talent search & jobs</p>
-                      </div>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-
-                {/* Registration Button */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger className="flex items-center gap-1.5 rounded-md bg-[#135f52] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0d5146]">
-                    <span>Get started</span>
-                    <ChevronDown size={14} className="opacity-80" />
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56 bg-white p-1.5 shadow-xl border border-[#dce7e1]">
-                    <div className="px-2 py-1.5 text-[11px] font-bold uppercase tracking-wider text-[#73837c]">
-                      Create new account
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => setLocation("/register/college")}
+                    className="cursor-pointer gap-2.5 py-2 text-xs font-medium hover:bg-[#f0f6f3]"
+                  >
+                    <Building2 size={16} className="text-[#135f52]" />
+                    <div>
+                      <p className="font-semibold text-[#14221f]">College Partner</p>
+                      <p className="text-[11px] text-[#73837c]">Register college portal</p>
                     </div>
-                    <DropdownMenuItem
-                      onClick={() => setLocation("/register/student")}
-                      className="cursor-pointer gap-2.5 py-2 text-xs font-medium hover:bg-[#f0f6f3]"
-                    >
-                      <GraduationCap size={16} className="text-[#135f52]" />
-                      <div>
-                        <p className="font-semibold text-[#14221f]">Student Account</p>
-                        <p className="text-[11px] text-[#73837c]">Track career readiness</p>
-                      </div>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => setLocation("/register/college")}
-                      className="cursor-pointer gap-2.5 py-2 text-xs font-medium hover:bg-[#f0f6f3]"
-                    >
-                      <Building2 size={16} className="text-[#135f52]" />
-                      <div>
-                        <p className="font-semibold text-[#14221f]">College Partner</p>
-                        <p className="text-[11px] text-[#73837c]">Register college portal</p>
-                      </div>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => setLocation("/register/recruiter")}
-                      className="cursor-pointer gap-2.5 py-2 text-xs font-medium hover:bg-[#f0f6f3]"
-                    >
-                      <Briefcase size={16} className="text-[#135f52]" />
-                      <div>
-                        <p className="font-semibold text-[#14221f]">Recruiter Account</p>
-                        <p className="text-[11px] text-[#73837c]">Hire demonstrated talent</p>
-                      </div>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => setLocation("/register/recruiter")}
+                    className="cursor-pointer gap-2.5 py-2 text-xs font-medium hover:bg-[#f0f6f3]"
+                  >
+                    <Briefcase size={16} className="text-[#135f52]" />
+                    <div>
+                      <p className="font-semibold text-[#14221f]">Recruiter Account</p>
+                      <p className="text-[11px] text-[#73837c]">Hire demonstrated talent</p>
+                    </div>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
           </div>
           <button className="rounded-md p-2 md:hidden" onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle menu">
@@ -292,7 +335,41 @@ export default function Home() {
                   Explore platform
                 </a>
               </div>
-              <div className="mt-10 flex items-center gap-5 text-xs text-[#72847d]">
+
+              {/* Direct Portal Logins Strip */}
+              <div className="mt-8 pt-5 border-t border-[#dfe8e2]/80">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-[#688177] mb-2.5 flex items-center gap-1.5">
+                  <LogIn size={13} className="text-[#135f52]" /> Direct Portal Access:
+                </p>
+                <div className="flex flex-wrap gap-2 items-center">
+                  <Link
+                    href="/login/student"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-[#cbdad3] text-xs font-semibold text-[#135f52] hover:bg-[#eaf4f0] shadow-xs transition"
+                  >
+                    <GraduationCap size={15} /> Student Login
+                  </Link>
+                  <Link
+                    href="/login/college"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-[#cbdad3] text-xs font-semibold text-[#135f52] hover:bg-[#eaf4f0] shadow-xs transition"
+                  >
+                    <Building2 size={15} /> College Login
+                  </Link>
+                  <Link
+                    href="/login/recruiter"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-[#cbdad3] text-xs font-semibold text-[#135f52] hover:bg-[#eaf4f0] shadow-xs transition"
+                  >
+                    <Briefcase size={15} /> Recruiter Login
+                  </Link>
+                  <Link
+                    href="/login/github"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#24292f] text-white text-xs font-semibold hover:bg-[#15191d] shadow-xs transition"
+                  >
+                    <Github size={15} /> GitHub Login
+                  </Link>
+                </div>
+              </div>
+
+              <div className="mt-6 flex items-center gap-5 text-xs text-[#72847d]">
                 <span className="flex items-center gap-1.5">
                   <ShieldCheck size={15} className="text-[#135f52]" /> Verified evidence
                 </span>
@@ -346,23 +423,46 @@ export default function Home() {
                 Built for the students, administrators, and hiring teams who value demonstrated capability.
               </p>
             </div>
-            <div className="mt-10 grid gap-4 md:grid-cols-3" style={{ perspective: "1000px" }}>
-              {roles.map(({ title, copy, href, icon: Icon }) => (
-                <Link key={href} href={href} asChild>
-                  <motion.a whileHover={{ rotateX: 2, rotateY: -2, scale: 1.02, z: 20 }} transition={{ type: "spring", stiffness: 300 }}
-                    className="group rounded-xl border border-[#d5e2da] bg-white p-6 transition-all hover:-translate-y-1 hover:border-[#a8c6b9] hover:shadow-xl relative"
+            <div className="mt-10 grid gap-5 md:grid-cols-3">
+              {roles.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <div
+                    key={item.href}
+                    className="flex flex-col justify-between rounded-xl border border-[#d5e2da] bg-white p-6 shadow-sm transition hover:border-[#a8c6b9] hover:shadow-md"
                   >
-                    <div className="flex items-start justify-between">
-                      <span className="grid h-10 w-10 place-items-center rounded-lg bg-[#e6f1ec] text-[#135f52]">
-                        <Icon size={19} />
-                      </span>
-                      <ArrowRight size={18} className="text-[#9aaba3] transition group-hover:translate-x-1 group-hover:text-[#135f52]" />
+                    <div>
+                      <div className="flex items-start justify-between">
+                        <span className="grid h-10 w-10 place-items-center rounded-lg bg-[#e6f1ec] text-[#135f52]">
+                          <Icon size={19} />
+                        </span>
+                        <Link
+                          href={item.loginHref}
+                          className="text-xs font-semibold text-[#135f52] hover:underline flex items-center gap-1"
+                        >
+                          Login <ArrowRight size={13} />
+                        </Link>
+                      </div>
+                      <h3 className="mt-5 font-display text-lg font-semibold text-[#14221f]">{item.title}</h3>
+                      <p className="mt-2 text-sm leading-6 text-[#6f8079]">{item.copy}</p>
                     </div>
-                    <h3 className="mt-12 font-display text-lg font-semibold">{title}</h3>
-                    <p className="mt-2 text-sm leading-6 text-[#6f8079]">{copy}</p>
-                  </motion.a>
-                </Link>
-              ))}
+                    <div className="mt-6 pt-4 border-t border-[#edf2ef] flex items-center justify-between gap-2">
+                      <Link
+                        href={item.loginHref}
+                        className="flex-1 text-center py-2 px-3 rounded-lg bg-[#135f52] text-white text-xs font-semibold hover:bg-[#0d5146] transition"
+                      >
+                        {item.loginLabel}
+                      </Link>
+                      <Link
+                        href={item.href}
+                        className="py-2 px-3 rounded-lg border border-[#cbdad3] text-xs font-semibold text-[#31574d] hover:bg-[#f1f6f3] transition"
+                      >
+                        Workspace
+                      </Link>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </motion.section>
@@ -467,12 +567,31 @@ export default function Home() {
           </div>
         </motion.section>
       </main>
-      <footer className="border-t border-[#dce7e1] bg-[#f7f8f5]">
-        <div className="mx-auto flex max-w-7xl flex-col gap-3 px-5 py-7 text-xs text-[#75857e] md:flex-row md:items-center md:justify-between lg:px-8">
-          <p>© 2026 Career OS — Career Readiness Intelligence Platform</p>
-          <p className="flex items-center gap-2">
-            <Github size={14} /> Built for evidence, not optics <ChevronDown size={13} />
-          </p>
+      <footer className="border-t border-[#dce7e1] bg-[#f7f8f5] py-8">
+        <div className="mx-auto max-w-7xl px-5 lg:px-8 space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#e2ece7] pb-5">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-display font-bold text-xs text-[#14221f]">Portals:</span>
+              <Link href="/login/student" className="text-xs font-semibold text-[#135f52] hover:underline">Student Login</Link>
+              <span className="text-[#cbdad3]">·</span>
+              <Link href="/login/college" className="text-xs font-semibold text-[#135f52] hover:underline">College Login</Link>
+              <span className="text-[#cbdad3]">·</span>
+              <Link href="/login/recruiter" className="text-xs font-semibold text-[#135f52] hover:underline">Recruiter Login</Link>
+              <span className="text-[#cbdad3]">·</span>
+              <Link href="/login/github" className="text-xs font-semibold text-[#135f52] hover:underline">GitHub Login</Link>
+            </div>
+            <div className="flex items-center gap-4 text-xs text-[#62776e] flex-wrap">
+              <Link href="/register/student" className="hover:text-[#135f52]">Student Registration</Link>
+              <Link href="/register/college" className="hover:text-[#135f52]">College Registration</Link>
+              <Link href="/register/recruiter" className="hover:text-[#135f52]">Recruiter Registration</Link>
+            </div>
+          </div>
+          <div className="flex flex-col gap-3 text-xs text-[#75857e] md:flex-row md:items-center md:justify-between">
+            <p>© 2026 Career OS — Career Readiness Intelligence Platform</p>
+            <p className="flex items-center gap-2">
+              <Github size={14} /> Built for evidence, not optics
+            </p>
+          </div>
         </div>
       </footer>
     </div>

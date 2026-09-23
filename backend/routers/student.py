@@ -12,86 +12,14 @@ class ConnectGithubRequest(BaseModel):
 
 class ConnectLinkedinRequest(BaseModel):
     profileUrl: str
+    headline: Optional[str] = None
+    skills: Optional[List[str]] = None
 
 @router.get("/getProfessionalProfiles")
 @router.post("/getProfessionalProfiles")
 def get_professional_profiles():
-    # If GitHub was connected via auth or previously, return it
     github = current_session.get("github_profile")
-    if not github:
-        # Default mock or empty
-        github = {
-            "id": 1,
-            "username": "alexvance-dev",
-            "profileUrl": "https://github.com/alexvance-dev",
-            "verified": True,
-            "connectedAt": "2026-09-20T10:00:00Z",
-            "data": {
-                "name": "Alex Vance",
-                "bio": "Full-stack developer & CS Student building open source tools.",
-                "avatar_url": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-                "public_repos": 14,
-                "followers": 48,
-                "following": 22,
-                "topLanguages": ["TypeScript", "Python", "Rust", "Go"],
-                "repos": [
-                    {
-                        "name": "distributed-task-queue",
-                        "description": "High-throughput asynchronous task worker in Python & Redis.",
-                        "language": "Python",
-                        "stargazers_count": 86,
-                        "forks_count": 14,
-                        "html_url": "https://github.com/alexvance-dev/distributed-task-queue",
-                    },
-                    {
-                        "name": "react-flow-visualizer",
-                        "description": "Interactive DAG workflow builder built with React and TailwindCSS.",
-                        "language": "TypeScript",
-                        "stargazers_count": 42,
-                        "forks_count": 8,
-                        "html_url": "https://github.com/alexvance-dev/react-flow-visualizer",
-                    },
-                    {
-                        "name": "rust-log-indexer",
-                        "description": "Blazing fast text log indexing tool utilizing SIMD operations.",
-                        "language": "Rust",
-                        "stargazers_count": 31,
-                        "forks_count": 3,
-                        "html_url": "https://github.com/alexvance-dev/rust-log-indexer",
-                    },
-                    {
-                        "name": "careeros-smart-contracts",
-                        "description": "Decentralized verification contracts for academic certificates.",
-                        "language": "Solidity",
-                        "stargazers_count": 19,
-                        "forks_count": 2,
-                        "html_url": "https://github.com/alexvance-dev/careeros-smart-contracts",
-                    }
-                ],
-            }
-        }
-        current_session["github_profile"] = github
-
-    linkedin = {
-        "id": 1,
-        "username": "alex-vance-cs",
-        "profileUrl": "https://linkedin.com/in/alex-vance-cs",
-        "verified": True,
-        "connectedAt": "2026-09-18T14:30:00Z",
-        "data": {
-            "headline": "Computer Science Scholar | Aspiring Systems Engineer",
-            "experience": [
-                {
-                    "title": "Software Engineering Intern",
-                    "company": "Northstar Cloud Labs",
-                    "duration": "May 2025 - Aug 2025",
-                    "description": "Optimized microservice API response times by 38%."
-                }
-            ],
-            "skills": ["TypeScript", "FastAPI", "PostgreSQL", "Docker", "Git", "System Design"],
-        }
-    }
-
+    linkedin = current_session.get("linkedin_profile")
     return {
         "github": github,
         "linkedin": linkedin,
@@ -179,10 +107,41 @@ def disconnect_github():
 
 @router.post("/connectLinkedin")
 def connect_linkedin(payload: ConnectLinkedinRequest):
+    raw_url = payload.profileUrl.strip()
+    if not raw_url:
+        raise HTTPException(status_code=400, detail="LinkedIn profile URL or vanity username is required.")
+
+    clean_handle = raw_url.replace("https://www.linkedin.com/in/", "").replace("https://linkedin.com/in/", "").replace("/", "").strip()
+    if not clean_handle:
+        clean_handle = "professional-profile"
+
+    canonical_url = f"https://www.linkedin.com/in/{clean_handle}"
+    skills = payload.skills or ["Software Engineering", "Full-Stack Development", "System Design"]
+    headline = payload.headline or "Verified Professional Profile via Career OS"
+
+    linkedin_record = {
+        "id": 1,
+        "username": clean_handle,
+        "profileUrl": canonical_url,
+        "verified": True,
+        "connectedAt": "2026-09-23T12:00:00Z",
+        "data": {
+            "headline": headline,
+            "skills": skills,
+            "experience": [],
+        }
+    }
+    current_session["linkedin_profile"] = linkedin_record
     return {
         "success": True,
-        "message": "LinkedIn profile connected successfully."
+        "profile": linkedin_record,
+        "message": f"LinkedIn profile @{clean_handle} connected successfully."
     }
+
+@router.post("/disconnectLinkedin")
+def disconnect_linkedin():
+    current_session["linkedin_profile"] = None
+    return {"success": True, "message": "LinkedIn profile disconnected."}
 
 @router.post("/analyzeGithub")
 def analyze_github():
@@ -255,17 +214,19 @@ def get_dashboard_data():
         "academicScore": 92,
     }
 
-    evidence_items = [
-        {
+    evidence_items = []
+    if gh:
+        evidence_items.append({
             "id": 1,
-            "title": "GitHub Full-Stack Repository Portfolio",
+            "title": f"GitHub Repository Portfolio (@{gh.get('username')})",
             "type": "PROJECT",
             "source": "GitHub Public REST API",
             "verificationStatus": "VERIFIED",
-            "verifiedAt": "2026-09-20",
-            "url": gh.get("profileUrl") if gh else "https://github.com/alexvance-dev",
+            "verifiedAt": gh.get("connectedAt", "2026-09-20"),
+            "url": gh.get("profileUrl") or f"https://github.com/{gh.get('username')}",
             "scoreContribution": 28,
-        },
+        })
+    evidence_items.extend([
         {
             "id": 2,
             "title": "Official Academic Transcript - Semesters 1-6",
@@ -344,37 +305,52 @@ def get_dashboard_data():
 @router.post("/generateResume")
 def generate_resume():
     gh = current_session.get("github_profile")
-    username = gh.get("username", "alexvance-dev") if gh else "alexvance-dev"
+    li = current_session.get("linkedin_profile")
+    user = current_session.get("user", {})
 
-    markdown = f"""# Alex Vance
-**Full-Stack Software Engineer & CS Scholar**  
-*Email:* alex.vance@university.edu | *GitHub:* [github.com/{username}](https://github.com/{username}) | *Location:* San Francisco, CA
+    full_name = f"{user.get('firstName', '')} {user.get('lastName', '')}".strip()
+    if not full_name:
+        full_name = gh.get("data", {}).get("name") if gh else "Student Scholar"
+
+    email = user.get("email") or (f"{gh.get('username')}@university.edu" if gh else "student@university.edu")
+    
+    contact_parts = [email]
+    if gh:
+        contact_parts.append(f"[github.com/{gh.get('username')}]({gh.get('profileUrl')})")
+    if li:
+        contact_parts.append(f"[linkedin.com/in/{li.get('username')}]({li.get('profileUrl')})")
+    contact_line = " | ".join(contact_parts)
+
+    repos = gh.get("data", {}).get("repos", []) if gh else []
+    projects_md = ""
+    if repos:
+        projects_md = "\n### Featured Projects (Verified from GitHub)\n"
+        for r in repos[:4]:
+            lang = r.get("language") or "Codebase"
+            stars = r.get("stargazers_count", 0)
+            forks = r.get("forks_count", 0)
+            projects_md += f"#### **{r.get('name')}** | *{lang}*\n- {r.get('description') or 'Open-source software project with verified repository commits.'}\n- [View on GitHub]({r.get('html_url')}) (⭐ {stars} stars | 🍴 {forks} forks)\n\n"
+
+    langs = ", ".join(gh.get("data", {}).get("topLanguages", [])) if gh else "TypeScript, Python, SQL"
+    skills = ", ".join(li.get("data", {}).get("skills", [])) if li else "System Design, Full-Stack Architecture, Docker, Git"
+
+    markdown = f"""# {full_name}
+**Software Engineer & CS Scholar**  
+*Contact:* {contact_line}
 
 ---
 
 ### Professional Summary
-Passionate and evidence-backed Software Engineer with verified experience building resilient distributed systems, modern web applications, and automated developer tooling. Strong foundations in data structures, algorithms, and microservices architecture.
+Passionate and evidence-backed Software Engineer with verified repository commits and authenticated university records. Demonstrates end-to-end competency across distributed computing, backend microservices, and modern user interfaces.
 
 ---
 
 ### Verified Technical Skills
-- **Languages:** TypeScript, JavaScript, Python, Rust, Go, SQL, HTML/CSS
-- **Frameworks & Libraries:** React, Vite, FastAPI, Node.js, Express, TailwindCSS, Next.js
-- **Cloud & DevOps:** Docker, AWS, PostgreSQL, Redis, Git, GitHub Actions, Linux
+- **Languages:** {langs}
+- **Competencies:** {skills}
 
 ---
-
-### Featured Projects (Verified from GitHub)
-#### **Distributed Task Queue Engine** | *Python, Redis, Docker*
-- Engineered an asynchronous worker pipeline processing 12,000+ jobs/sec with sub-5ms Redis latency.
-- Implemented fault-tolerant dead-letter queues and exponential backoff retry mechanics.
-
-#### **React Flow Visualizer** | *TypeScript, React, TailwindCSS*
-- Designed interactive DAG visualizer for continuous integration pipelines.
-- Integrated automated topological sort algorithms with real-time state synchronization.
-
----
-
+{projects_md}
 ### Education
 **B.S. in Computer Science & Engineering**  
 *Riverview Institute of Technology* | CGPA: 3.86/4.0 | Expected Graduation: May 2026

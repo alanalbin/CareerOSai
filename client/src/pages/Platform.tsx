@@ -268,19 +268,24 @@ export default function Platform({ role }: { role: Role }) {
               </p>
               <div className="mt-6 flex flex-col gap-2.5">
                 <Button asChild className="bg-[#135f52] font-semibold text-white hover:bg-[#0d5146]">
+                  <a href={`/login/${role}`}>
+                    Sign In as {role === "student" ? "Student" : role === "college" ? "College Admin" : "Recruiter"}
+                  </a>
+                </Button>
+                <Button asChild variant="outline" className="border-[#cbdad3] text-xs font-semibold">
                   <a href={user.role === "STUDENT" ? "/student" : user.role === "COLLEGE_ADMIN" ? "/college" : "/recruiter"}>
-                    Go to Your Workspace
+                    Return to Your Workspace ({user.role.replace("_", " ")})
                   </a>
                 </Button>
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   onClick={() => {
                     logout();
                     toast.success("Signed out successfully");
                   }}
-                  className="border-[#cbdad3] text-xs font-semibold"
+                  className="text-xs text-[#71817b] hover:text-[#a33f3f]"
                 >
-                  Sign Out
+                  Sign Out of Current Account
                 </Button>
               </div>
             </div>

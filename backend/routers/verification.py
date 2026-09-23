@@ -14,9 +14,31 @@ class ResolveDiscrepancyRequest(BaseModel):
 @router.post("/getMatrix")
 def get_verification_matrix():
     gh = current_session.get("github_profile")
-    gh_username = gh.get("username", "alexvance-dev") if gh else None
-    gh_repos = gh.get("data", {}).get("public_repos", 14) if gh else 0
-    top_langs = ", ".join(gh.get("data", {}).get("topLanguages", ["TypeScript", "Python"])) if gh else "TypeScript, Python"
+    li = current_session.get("linkedin_profile")
+    user = current_session.get("user", {})
+
+    student_name = f"{user.get('firstName', '')} {user.get('lastName', '')}".strip()
+    if not student_name:
+        student_name = gh.get("data", {}).get("name") if gh else "Student User"
+
+    gh_username = gh.get("username") if gh else None
+    gh_repos = gh.get("data", {}).get("public_repos", len(gh.get("data", {}).get("repos", []))) if gh else 0
+    top_langs = ", ".join(gh.get("data", {}).get("topLanguages", [])) if gh else "Not Connected"
+
+    li_username = li.get("username") if li else None
+    li_skills = ", ".join(li.get("data", {}).get("skills", [])) if li else "Not Connected"
+
+    sources_full_name = ["Career OS", "OCR"]
+    if gh:
+        sources_full_name.append("GitHub")
+    if li:
+        sources_full_name.append("LinkedIn")
+
+    sources_skills = ["Career OS"]
+    if gh:
+        sources_skills.append("GitHub")
+    if li:
+        sources_skills.append("LinkedIn")
 
     return {
         "accounts": {
@@ -25,37 +47,37 @@ def get_verification_matrix():
                 "username": gh_username,
                 "publicRepos": gh_repos,
             } if gh else None,
-            "linkedin": True,
+            "linkedin": bool(li),
             "linkedinData": {
-                "username": "alex-vance-cs",
-            },
+                "username": li_username,
+            } if li else None,
         },
         "rows": [
             {
                 "field": "Full Name",
-                "sources": ["Career OS", "OCR", "GitHub", "LinkedIn"],
-                "careerOsValue": "Alex Vance",
-                "ocrValue": "Alex Vance",
-                "linkedinValue": "Alex Vance",
-                "githubValue": gh.get("data", {}).get("name", "Alex Vance") if gh else "Alex Vance",
-                "status": "VERIFIED",
+                "sources": sources_full_name,
+                "careerOsValue": student_name,
+                "ocrValue": student_name,
+                "linkedinValue": student_name if li else "Not Connected",
+                "githubValue": gh.get("data", {}).get("name", gh_username) if gh else "Not Connected",
+                "status": "VERIFIED" if (gh and li) else ("PARTIALLY_VERIFIED" if (gh or li) else "PENDING"),
             },
             {
                 "field": "Primary Skills",
-                "sources": ["Career OS", "GitHub", "LinkedIn"],
+                "sources": sources_skills,
                 "careerOsValue": "TypeScript, Python, React",
                 "ocrValue": "TypeScript, Python, FastAPI",
-                "linkedinValue": "TypeScript, Python, PostgreSQL",
+                "linkedinValue": li_skills,
                 "githubValue": top_langs,
-                "status": "CONSENTED" if gh else "PARTIALLY_VERIFIED",
+                "status": "VERIFIED" if gh else "CONSENTED",
             },
             {
                 "field": "Repository Count",
-                "sources": ["Career OS", "GitHub"],
-                "careerOsValue": f"{gh_repos} Projects",
+                "sources": ["Career OS"] + (["GitHub"] if gh else []),
+                "careerOsValue": f"{gh_repos} Projects" if gh else "0 Projects",
                 "ocrValue": "—",
                 "linkedinValue": "—",
-                "githubValue": f"{gh_repos} Public Repos",
+                "githubValue": f"{gh_repos} Public Repos" if gh else "Not Connected",
                 "status": "VERIFIED" if gh else "NEEDS_REVIEW",
             },
             {
@@ -63,7 +85,7 @@ def get_verification_matrix():
                 "sources": ["Career OS", "OCR", "College"],
                 "careerOsValue": "B.S. Computer Science",
                 "ocrValue": "B.S. Computer Science",
-                "linkedinValue": "B.S. Computer Science",
+                "linkedinValue": "B.S. Computer Science" if li else "Not Connected",
                 "githubValue": "—",
                 "status": "VERIFIED",
             },
