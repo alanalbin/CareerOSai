@@ -142,3 +142,5 @@ career-readiness-platform/
 
 ## 📄 License
 Proprietary — Vantage Career Readiness Intelligence Platform.
+#   C a r e e r O S a i  
+ 
